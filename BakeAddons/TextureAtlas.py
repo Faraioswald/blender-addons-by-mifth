@@ -121,6 +121,9 @@ class children(bpy.types.PropertyGroup):
 class vertex_groups(bpy.types.PropertyGroup):
     name = bpy.props.StringProperty(default="") 
     
+class vertex_colors(bpy.types.PropertyGroup):
+    name = bpy.props.StringProperty(default="")     
+    
 class groups(bpy.types.PropertyGroup):
     name = bpy.props.StringProperty(default="") 
 
@@ -163,6 +166,7 @@ class mergedObjects(bpy.types.PropertyGroup):
     children = bpy.props.CollectionProperty(type=children)
     vertex_groups = bpy.props.CollectionProperty(type=vertex_groups)
     groups = bpy.props.CollectionProperty(type=groups)
+    vertex_colors = bpy.props.CollectionProperty(type=vertex_colors)    
     uv_layers = bpy.props.CollectionProperty(type=uv_layers)
     
 
@@ -342,6 +346,11 @@ class mergeObjects(bpy.types.Operator):
             for material in object.material_slots:
                 item2 = active_object.ms_merged_objects[item.name].material.add()
                 item2.name = material.name
+            
+            ### save vertex color name in merged object
+            for vertcolor in object.data.vertex_colors:
+                item7 = active_object.ms_merged_objects[item.name].vertex_colors.add()
+                item7.name = vertcolor.name
             
             for child in object.children:
                 if child not in bpy.context.selected_objects:
@@ -539,7 +548,15 @@ class separateObjects(bpy.types.Operator):
                 bpy.context.scene.objects.active = bpy.context.scene.objects[object.name]  
                 
             
-                
+            ### delete not used vertex colors from separeted objects
+            for vertexcolor in bpy.context.scene.objects[object.name].data.vertex_colors:
+	          vertexcolor.active = True
+	          ### Works incorrectly
+                  #if vertexcolor.name not in object.vertex_colors:
+                       #vertexcolor.active_render = True		  
+                       #bpy.ops.mesh.vertex_color_remove() 
+                      
+ 
             ### delete not used materials from separeted objects
             slot_length = len(bpy.context.scene.objects[object.name].material_slots)
             for i in range(0,len(bpy.context.scene.objects[object.name].material_slots)):
@@ -563,7 +580,8 @@ class separateObjects(bpy.types.Operator):
             for vertex_group in bpy.context.scene.objects[object.name].vertex_groups:
                 if vertex_group.name not in object.vertex_groups:
                     bpy.context.scene.objects[object.name].vertex_groups.remove(vertex_group)
-                
+
+                    
             ### delete not used groups from separeted objects
             for group in bpy.data.groups:
                 if group.name not in object.groups:
@@ -717,6 +735,7 @@ def register():
     bpy.utils.register_class(uv_layers)
     bpy.utils.register_class(children)
     bpy.utils.register_class(vertex_groups)
+    bpy.utils.register_class(vertex_colors)
     bpy.utils.register_class(groups)
     
     bpy.utils.register_class(mergedObjects)
@@ -746,6 +765,7 @@ def unregister():
     bpy.utils.unregister_class(uv_layers)
     bpy.utils.unregister_class(children)
     bpy.utils.unregister_class(vertex_groups)
+    bpy.utils.unregister_class(vertex_colors)
     bpy.utils.unregister_class(groups)
     
     bpy.utils.unregister_class(mergedObjects)
