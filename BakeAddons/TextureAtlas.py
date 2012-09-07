@@ -244,7 +244,7 @@ class mergeObjects(bpy.types.Operator):
 
         
         ### Make Object Single User
-        bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, texture=False, animation=False)
+        #bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, texture=False, animation=False)
 
         for object in OBJECTLIST:
             
