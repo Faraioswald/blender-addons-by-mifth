@@ -65,17 +65,20 @@ class runTextureAtlas(bpy.types.Operator):
         
         try:
             OBJECTLIST = []
-            active_object = bpy.context.scene.objects.active.name
-            for object in bpy.context.selectable_objects:
-                OBJECTLIST.append(object.name)
+            if len(bpy.context.scene.objects) > 0:
+                active_object = bpy.context.scene.objects.active.name
+                for object in bpy.context.selectable_objects:
+                    OBJECTLIST.append(object.name)
             
             
             
             bpy.context.area.type = 'VIEW_3D'
 
             for group in bpy.context.scene.ms_lightmap_groups:
+	        
+               
     
-                if group.bake == True:
+                if group.bake == True and len(bpy.data.groups[group.name].objects) > 0:
 
                     res = int(bpy.context.scene.ms_lightmap_groups[group.name].resolution)
                     bpy.ops.object.ms_create_lightmap(group_name=group.name, resolution=res)  
@@ -185,11 +188,11 @@ class addLightmapGroup(bpy.types.Operator):
         item.resolution = '1024'
         bpy.context.scene.ms_lightmap_groups_index = len(bpy.context.scene.ms_lightmap_groups)-1
         
-        
-        for object in bpy.context.selected_objects:
-            bpy.context.scene.objects.active = object
-            if bpy.context.active_object.type == 'MESH':
-                bpy.data.groups[group.name].objects.link(object)
+        if len(bpy.context.selected_objects) > 0:
+             for object in bpy.context.selected_objects:
+                 bpy.context.scene.objects.active = object
+                 if bpy.context.active_object.type == 'MESH':
+                     bpy.data.groups[group.name].objects.link(object)
 
         
         return {'FINISHED'}
