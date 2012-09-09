@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Texture Atlas",
     "author": "Andreas Esau, Paul Geraskin",
-    "version": (0, 1),
+    "version": (0, 12),
     "blender": (2, 6, 3),
     "api": 50000,
     "location": "Properties > Render",
@@ -48,7 +48,8 @@ class TextureAtlas(bpy.types.Panel):
         row = self.layout.row()
         row = self.layout.row()
         row.operator("scene.ms_add_selected_to_group", text="Add Selection To Current Group",icon="GROUP")
-        row.operator("scene.ms_select_group", text="Select Current Group",icon="GROUP")        
+        row.operator("scene.ms_select_group", text="Select Current Group",icon="GROUP")
+        row.operator("scene.ms_remove_selected", text="Remove Selected Group and UVs",icon="GROUP")        
         
         row = self.layout.row()
         row.operator("object.ms_run",text="Create Texture Atlas",icon="LAMP_SPOT")
@@ -143,6 +144,7 @@ class addSelectedToGroup(bpy.types.Operator):
             group_name = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index].name
         except:
             self.report({'INFO'}, "No Groups Exists!")
+            
         for object in bpy.context.selected_objects:
             if object.type == 'MESH':
                 try:
@@ -163,15 +165,59 @@ class selectGroup(bpy.types.Operator):
             group_name = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index].name
         except:
             self.report({'INFO'}, "No Groups Exists!")
-        for object in bpy.context.selectable_objects:
-                try:
-                    bpy.ops.object.select_all(action='DESELECT')
-                    for object in bpy.data.groups[group_name].objects:
-                      object.select = True 
-                except:
-                    pass
+
+        try:
+            bpy.ops.object.select_all(action='DESELECT')
+            for object in bpy.data.groups[group_name].objects:
+                  object.select = True 
+        except:
+            pass
                     
-        return {'FINISHED'}        
+        return {'FINISHED'}    
+        
+        
+class removeFromGroup(bpy.types.Operator):
+    bl_idname = "scene.ms_remove_selected" 
+    bl_label = ""
+    bl_description = "Selected Objects of current Group"
+    
+    ### removeUV method
+    def removeUV(self, mesh, name):
+             for uv in mesh.data.uv_textures:
+                   if uv.name == name:
+                        uv.active = True
+                        bpy.ops.mesh.uv_texture_remove()
+                        
+        
+        #remove all modifiers
+        #for m in mesh.modifiers:
+            #bpy.ops.object.modifier_remove(modifier=m.name)
+            
+    
+    def execute(self, context):
+        ### set 3dView context
+        old_context = bpy.context.area.type        
+        bpy.context.area.type = 'VIEW_3D'
+        
+        for group in bpy.context.scene.ms_lightmap_groups:        
+            group_name = group.name
+
+            for object in bpy.context.selected_objects:
+                  bpy.ops.object.mode_set(mode = 'OBJECT')
+                  bpy.context.scene.objects.active = object
+        
+                  if object.type == 'MESH' and bpy.data.groups[group_name] in object.users_group:
+
+                         ### remove UV has crash
+                         self.removeUV(object, group_name)
+
+                         #### remove from group
+                         bpy.data.groups[group_name].objects.unlink(object)
+
+                         
+        bpy.context.area.type = old_context
+        return {'FINISHED'}          
+        
         
 class addLightmapGroup(bpy.types.Operator):
     bl_idname = "scene.ms_add_lightmap_group" 
@@ -259,9 +305,8 @@ class mergeObjects(bpy.types.Operator):
                 if uv.name == self.group_name:
                     uv.active = True
                     bpy.context.scene.objects.active = object
-#                    bpy.ops.mesh.uv_texture_remove() 
 
-
+                    
             ### generate temp Duplicate Objects with copied modifier,properties and logic bricks
             bpy.ops.object.select_all(action='DESELECT')
             
@@ -434,6 +479,7 @@ def register():
     bpy.utils.register_class(delLightmapGroup)
     bpy.utils.register_class(addSelectedToGroup)
     bpy.utils.register_class(selectGroup)
+    bpy.utils.register_class(removeFromGroup)
     
     bpy.utils.register_class(runTextureAtlas)
     bpy.utils.register_class(mergeObjects)
@@ -460,6 +506,7 @@ def unregister():
     bpy.utils.unregister_class(delLightmapGroup)
     bpy.utils.unregister_class(addSelectedToGroup)
     bpy.utils.unregister_class(selectGroup)
+    bpy.utils.unregister_class(removeFromGroup)
     
     bpy.utils.unregister_class(runTextureAtlas)
     bpy.utils.unregister_class(mergeObjects)
