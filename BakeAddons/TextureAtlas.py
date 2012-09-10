@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Texture Atlas",
     "author": "Andreas Esau, Paul Geraskin",
-    "version": (0, 12),
+    "version": (0, 13),
     "blender": (2, 6, 3),
     "api": 50000,
     "location": "Properties > Render",
@@ -112,13 +112,14 @@ class groups(bpy.types.PropertyGroup):
 
 class ms_lightmap_groups(bpy.types.PropertyGroup):
     
-    def update(self,context):
-        for object in bpy.data.groups[self.name].objects:
-            for material in object.data.materials:
-                material.texture_slots[self.name].use = self.bake
+    #def update(self,context):
+        #for object in bpy.data.groups[self.name].objects:
+            #for material in object.data.materials:
+                #material.texture_slots[self.name].use = self.bake
     
     name = bpy.props.StringProperty(default="")
-    bake = bpy.props.BoolProperty(default=True, update=update)
+    bake = bpy.props.BoolProperty(default=True)
+    #bake = bpy.props.BoolProperty(default=True, update=update)
 
     unwrap_type = EnumProperty(name="unwrap_type",items=(('0','Smart_Unwrap', 'Smart_Unwrap'),('1','Lightmap', 'Lightmap'), ('2','No_Unwrap', 'No_Unwrap')))
     resolution = EnumProperty(name="resolution",items=(('256','256','256'),('512','512','512'),('1024','1024','1024'),('2048','2048','2048'),('4096','4096','4096')))
