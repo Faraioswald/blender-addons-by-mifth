@@ -425,6 +425,7 @@ class mergeObjects(bpy.types.Operator):
 
             ### hide render of original mesh
             object.hide_render = True
+            object.hide = True
             object.select = False
 
             ### delete vertex groups of the object
@@ -520,6 +521,7 @@ class separateObjects(bpy.types.Operator):
 
                       ### unhide render of original mesh
                       ob_original.hide_render = False                      
+                      ob_original.hide = False
                       
                       ### delete separeted object
                       bpy.ops.object.select_all(action='DESELECT')
