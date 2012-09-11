@@ -52,14 +52,44 @@ class TextureAtlas(bpy.types.Panel):
         row.operator("scene.ms_remove_selected", text="Remove Selected Group and UVs",icon="GROUP")        
         
         row = self.layout.row()
-        row.operator("object.ms_run",text="Start Unwrap/Bake",icon="LAMP_SPOT")
-        row.operator("object.ms_run_remove",text="Finsh Unwrap/Bake",icon="LAMP_SPOT")
+        row.operator("object.ms_auto",text="Auto Unwrap",icon="LAMP_SPOT")        
+        row = self.layout.row()        
+        row.operator("object.ms_run",text="Start Manual Unwrap/Bake",icon="LAMP_SPOT")
+        row.operator("object.ms_run_remove",text="Finsh Manual Unwrap/Bake",icon="LAMP_SPOT")
 
+        
+        
+class runAuto(bpy.types.Operator):
+    bl_idname = "object.ms_auto"
+    bl_label = "Auto Unwrapping"
+    bl_description = "Auto Unwrapping"
+    
+    def execute(self, context):
+        old_context = bpy.context.area.type
+
+        try:
+            group = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index]
+            bpy.context.area.type = 'VIEW_3D'
+    
+            if group.bake == True and len(bpy.data.groups[group.name].objects) > 0:
+
+                 res = int(bpy.context.scene.ms_lightmap_groups[group.name].resolution)
+                 bpy.ops.object.ms_create_lightmap(group_name=group.name, resolution=res)  
+                 bpy.ops.object.ms_merge_objects(group_name=group.name, unwrap=True)
+                 bpy.ops.object.ms_separate_objects(group_name=group.name) 
+                 
+            bpy.context.area.type = old_context
+
+        except:
+            self.report({'INFO'}, "Something went wrong!") 
+            bpy.context.area.type = old_context  
+        return{'FINISHED'}   
+        
         
 class runStart(bpy.types.Operator):
     bl_idname = "object.ms_run"
-    bl_label = "TextureAtlas - Run"
-    bl_description = "Creates a Shadowmap from selected Objects"
+    bl_label = "Make Manual Unwrapping Object"
+    bl_description = "Makes Manual Unwrapping Object"
     
     def execute(self, context):
         old_context = bpy.context.area.type
@@ -73,7 +103,7 @@ class runStart(bpy.types.Operator):
                  res = int(bpy.context.scene.ms_lightmap_groups[group.name].resolution)
                  bpy.ops.object.ms_create_lightmap(group_name=group.name, resolution=res)  
                     
-                 bpy.ops.object.ms_merge_objects(group_name=group.name)
+                 bpy.ops.object.ms_merge_objects(group_name=group.name, unwrap=False)
 
             bpy.context.area.type = old_context
 
@@ -82,11 +112,11 @@ class runStart(bpy.types.Operator):
              bpy.context.area.type = old_context  
         return{'FINISHED'}
     
-    
+
 class runFinish(bpy.types.Operator):
     bl_idname = "object.ms_run_remove"
-    bl_label = "Remove Unwrapping Object"
-    bl_description = "Removes Unwrapping Object"
+    bl_label = "Remove Manual Unwrapping Object"
+    bl_description = "Removes Manual Unwrapping Object"
     
     def execute(self, context):
         old_context = bpy.context.area.type
@@ -338,7 +368,7 @@ class mergeObjects(bpy.types.Operator):
     bl_description = "Merges Objects and stores Origins"
     
     group_name = StringProperty(default='')
-
+    unwrap = BoolProperty(default=False)
     
     def execute(self, context):
       
@@ -432,20 +462,19 @@ class mergeObjects(bpy.types.Operator):
         bpy.ops.object.select_all(action='DESELECT')        
         ob_merge.select = True
         bpy.context.scene.objects.active = ob_merge
-        #bpy.ops.object.mode_set(mode = 'EDIT')        
-        #bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.object.mode_set(mode = 'EDIT')        
+        bpy.ops.mesh.select_all(action='SELECT')
         
-        #if bpy.context.scene.ms_lightmap_groups[self.group_name].unwrap_type == '0':
-               #bpy.ops.uv.smart_project(angle_limit=72.0, island_margin=0.2, user_area_weight=0.0)
-        #elif bpy.context.scene.ms_lightmap_groups[self.group_name].unwrap_type == '1':
-               #bpy.ops.uv.lightmap_pack(PREF_CONTEXT='ALL_FACES', PREF_PACK_IN_ONE=True, PREF_NEW_UVLAYER=False, PREF_APPLY_IMAGE=False, PREF_IMG_PX_SIZE=1024, PREF_BOX_DIV=48, PREF_MARGIN_DIV=0.2)        
-
-               
+        if self.unwrap == True and bpy.context.scene.ms_lightmap_groups[self.group_name].unwrap_type == '0':
+               bpy.ops.uv.smart_project(angle_limit=72.0, island_margin=0.2, user_area_weight=0.0)
+        elif self.unwrap == True and bpy.context.scene.ms_lightmap_groups[self.group_name].unwrap_type == '1':
+               bpy.ops.uv.lightmap_pack(PREF_CONTEXT='ALL_FACES', PREF_PACK_IN_ONE=True, PREF_NEW_UVLAYER=False, PREF_APPLY_IMAGE=False, PREF_IMG_PX_SIZE=1024, PREF_BOX_DIV=48, PREF_MARGIN_DIV=0.2)        
+        bpy.ops.object.mode_set(mode = 'OBJECT')    
+        
         ### remove all materials
         for material in ob_merge.material_slots:
-             bpy.ops.object.material_slot_remove()
+             bpy.ops.object.material_slot_remove()  
              
-        #bpy.ops.object.mode_set(mode = 'OBJECT')    
         return{'FINISHED'}
 
         
@@ -516,6 +545,7 @@ def register():
     bpy.utils.register_class(selectGroup)
     bpy.utils.register_class(removeFromGroup)
     
+    bpy.utils.register_class(runAuto)
     bpy.utils.register_class(runStart)
     bpy.utils.register_class(runFinish)
     bpy.utils.register_class(mergeObjects)
@@ -544,6 +574,7 @@ def unregister():
     bpy.utils.unregister_class(selectGroup)
     bpy.utils.unregister_class(removeFromGroup)
     
+    bpy.utils.unregister_class(runAuto)
     bpy.utils.unregister_class(runStart)
     bpy.utils.unregister_class(runFinish)
     bpy.utils.unregister_class(mergeObjects)
