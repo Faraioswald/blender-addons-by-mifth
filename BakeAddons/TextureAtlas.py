@@ -515,13 +515,13 @@ class separateObjects(bpy.types.Operator):
                       ob_merged.select = False
                       ob_separeted = bpy.context.selected_objects[0]
                       ob_original = bpy.context.scene.objects[object.name]
+                      ob_original.hide = False
                       ob_original.select = True
                       bpy.context.scene.objects.active = ob_separeted
                       bpy.ops.object.join_uvs()
 
                       ### unhide render of original mesh
                       ob_original.hide_render = False                      
-                      ob_original.hide = False
                       
                       ### delete separeted object
                       bpy.ops.object.select_all(action='DESELECT')
