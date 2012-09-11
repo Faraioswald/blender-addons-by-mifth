@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Texture Atlas",
     "author": "Andreas Esau, Paul Geraskin",
-    "version": (0, 13),
+    "version": (0, 14),
     "blender": (2, 6, 3),
     "api": 50000,
     "location": "Properties > Render",
@@ -52,53 +52,61 @@ class TextureAtlas(bpy.types.Panel):
         row.operator("scene.ms_remove_selected", text="Remove Selected Group and UVs",icon="GROUP")        
         
         row = self.layout.row()
-        row.operator("object.ms_run",text="Create Texture Atlas",icon="LAMP_SPOT")
+        row.operator("object.ms_run",text="Start Unwrap/Bake",icon="LAMP_SPOT")
+        row.operator("object.ms_run_remove",text="Finsh Unwrap/Bake",icon="LAMP_SPOT")
 
-class runTextureAtlas(bpy.types.Operator):
+        
+class runStart(bpy.types.Operator):
     bl_idname = "object.ms_run"
     bl_label = "TextureAtlas - Run"
     bl_description = "Creates a Shadowmap from selected Objects"
     
-    
-    
     def execute(self, context):
         old_context = bpy.context.area.type
-        
+
         try:
-            OBJECTLIST = []
-            if len(bpy.context.scene.objects) > 0:
-                active_object = bpy.context.scene.objects.active.name
-                for object in bpy.context.selectable_objects:
-                    OBJECTLIST.append(object.name)
-            
-            
-            
+            group = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index]
             bpy.context.area.type = 'VIEW_3D'
-
-            for group in bpy.context.scene.ms_lightmap_groups:
-	        
-               
     
-                if group.bake == True and len(bpy.data.groups[group.name].objects) > 0:
+            if group.bake == True and len(bpy.data.groups[group.name].objects) > 0:
 
-                    res = int(bpy.context.scene.ms_lightmap_groups[group.name].resolution)
-                    bpy.ops.object.ms_create_lightmap(group_name=group.name, resolution=res)  
+                 res = int(bpy.context.scene.ms_lightmap_groups[group.name].resolution)
+                 bpy.ops.object.ms_create_lightmap(group_name=group.name, resolution=res)  
                     
-                    bpy.ops.object.ms_merge_objects(group_name=group.name)
+                 bpy.ops.object.ms_merge_objects(group_name=group.name)
 
-                    bpy.ops.object.ms_separate_objects(group_name=group.name) 
-                      
             bpy.context.area.type = old_context
-            
-            bpy.ops.object.select_all(action='DESELECT')
-            for object in OBJECTLIST:
-                bpy.context.scene.objects[object].select = True
-                bpy.context.scene.objects.active = bpy.context.scene.objects[active_object]
-            bpy.ops.object.select_all(action='DESELECT')    
+
         except:
              self.report({'INFO'}, "Something went wrong!") 
              bpy.context.area.type = old_context  
         return{'FINISHED'}
+    
+    
+class runFinish(bpy.types.Operator):
+    bl_idname = "object.ms_run_remove"
+    bl_label = "Remove Unwrapping Object"
+    bl_description = "Removes Unwrapping Object"
+    
+    def execute(self, context):
+        old_context = bpy.context.area.type
+
+        try:
+            group = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index]
+            bpy.context.area.type = 'VIEW_3D'
+    
+            if group.bake == True and len(bpy.data.groups[group.name].objects) > 0:
+
+                 bpy.ops.object.ms_separate_objects(group_name=group.name) 
+                      
+            bpy.context.area.type = old_context
+            #bpy.ops.object.select_all(action='DESELECT')
+
+        except:
+             self.report({'INFO'}, "Something went wrong!") 
+             bpy.context.area.type = old_context  
+        return{'FINISHED'}
+        
     
 class uv_layers(bpy.types.PropertyGroup):
     name = bpy.props.StringProperty(default="")
@@ -180,7 +188,7 @@ class selectGroup(bpy.types.Operator):
 class removeFromGroup(bpy.types.Operator):
     bl_idname = "scene.ms_remove_selected" 
     bl_label = ""
-    bl_description = "Selected Objects of current Group"
+    bl_description = "Remove Selected Group and UVs"
     
     ### removeUV method
     def removeUV(self, mesh, name):
@@ -204,7 +212,6 @@ class removeFromGroup(bpy.types.Operator):
             group_name = group.name
 
             for object in bpy.context.selected_objects:
-                  bpy.ops.object.mode_set(mode = 'OBJECT')
                   bpy.context.scene.objects.active = object
         
                   if object.type == 'MESH' and bpy.data.groups[group_name] in object.users_group:
@@ -214,6 +221,7 @@ class removeFromGroup(bpy.types.Operator):
 
                          #### remove from group
                          bpy.data.groups[group_name].objects.unlink(object)
+                         object.hide_render = False
 
                          
         bpy.context.area.type = old_context
@@ -258,6 +266,9 @@ class delLightmapGroup(bpy.types.Operator):
         idx = bpy.context.scene.ms_lightmap_groups_index
         group_name = bpy.context.scene.ms_lightmap_groups[idx].name
         
+        for obj in bpy.data.groups[group_name].objects:
+             obj.hide_render = False
+        
         bpy.data.groups.remove(bpy.data.groups[bpy.context.scene.ms_lightmap_groups[idx].name])
         bpy.context.scene.ms_lightmap_groups.remove(bpy.context.scene.ms_lightmap_groups_index)
         bpy.context.scene.ms_lightmap_groups_index -= 1
@@ -266,107 +277,6 @@ class delLightmapGroup(bpy.types.Operator):
         
         return {'FINISHED'}
 
-class mergeObjects(bpy.types.Operator):
-    bl_idname = "object.ms_merge_objects" 
-    bl_label = "TextureAtlas - MergeObjects"
-    bl_description = "Merges Objects and stores Origins"
-    
-    group_name = StringProperty(default='')
-
-    
-    def execute(self, context):
-      
-        me = bpy.data.meshes.new('mergedObject')
-        ob_merge = bpy.data.objects.new('mergedObject', me)
-        ob_merge.location = bpy.context.scene.cursor_location   # position object at 3d-cursor
-        bpy.context.scene.objects.link(ob_merge)                # Link object to scene
-        me.update()
-        ob_merge.select = False      
-      
-        active_object = bpy.data.groups[self.group_name].objects[0]
-        bpy.ops.object.select_all(action='DESELECT')
-        
-        OBJECTLIST = []
-        for object in bpy.data.groups[self.group_name].objects:
-            OBJECTLIST.append(object)   
-            object.select = True   
-        bpy.context.scene.objects.active = active_object      
-
-        
-        ### Make Object Single User
-        #bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, texture=False, animation=False)
-
-        for object in OBJECTLIST:
-            
-            bpy.ops.object.select_all(action='DESELECT')
-            object.select = True
-            
-            ### activate lightmap uv if existant
-            for uv in object.data.uv_textures:
-                if uv.name == self.group_name:
-                    uv.active = True
-                    bpy.context.scene.objects.active = object
-
-                    
-            ### generate temp Duplicate Objects with copied modifier,properties and logic bricks
-            bpy.ops.object.select_all(action='DESELECT')
-            
-            object.select = True
-            bpy.context.scene.objects.active = object
-
-            bpy.ops.object.duplicate(linked=False, mode='TRANSLATION')
-            active_object = bpy.context.scene.objects.active
-            active_object.select = True
-            object.select = False
-
-
-            ### delete vertex groups of the object
-            for group in active_object.vertex_groups:
-                id = bpy.context.active_object.vertex_groups[group.name]
-                bpy.context.active_object.vertex_groups.remove(id)               
-                
-            ### create vertex groups for each selected object
-            bpy.context.scene.objects.active = bpy.data.objects[active_object.name]
-            bpy.ops.object.mode_set(mode = 'EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.object.vertex_group_add()
-            bpy.ops.object.vertex_group_assign()
-            id = len(bpy.context.object.vertex_groups)-1
-            bpy.context.active_object.vertex_groups[id].name = object.name
-            bpy.ops.mesh.select_all(action='DESELECT')
-            bpy.ops.object.mode_set(mode = 'OBJECT')
-            
-            
-            ### save object name and object location in merged object
-            item = ob_merge.ms_merged_objects.add()
-            item.name = object.name
-            #item.scale = mathutils.Vector(object.scale)
-            #item.rotation = mathutils.Vector(object.rotation_euler)
-            
-
-            ### merge objects together
-            bpy.ops.object.select_all(action='DESELECT')
-            active_object.select = True
-            ob_merge.select = True
-            bpy.context.scene.objects.active = ob_merge
-            bpy.ops.object.join()
-
-        ### make Unwrap    
-        bpy.ops.object.select_all(action='DESELECT')        
-        ob_merge.select = True
-        bpy.context.scene.objects.active = ob_merge
-        bpy.ops.object.mode_set(mode = 'EDIT')        
-        bpy.ops.mesh.select_all(action='SELECT')
-        
-        if bpy.context.scene.ms_lightmap_groups[self.group_name].unwrap_type == '0':
-               bpy.ops.uv.smart_project(angle_limit=72.0, island_margin=0.2, user_area_weight=0.0)
-        elif bpy.context.scene.ms_lightmap_groups[self.group_name].unwrap_type == '1':
-               bpy.ops.uv.lightmap_pack(PREF_CONTEXT='ALL_FACES', PREF_PACK_IN_ONE=True, PREF_NEW_UVLAYER=False, PREF_APPLY_IMAGE=False, PREF_IMG_PX_SIZE=1024, PREF_BOX_DIV=48, PREF_MARGIN_DIV=0.2)        
-
-        bpy.ops.object.mode_set(mode = 'OBJECT')    
-        return{'FINISHED'}
-
-        
         
 class createLightmap(bpy.types.Operator):
     bl_idname = "object.ms_create_lightmap" 
@@ -419,9 +329,126 @@ class createLightmap(bpy.types.Operator):
             
             
           bpy.ops.object.mode_set(mode = 'OBJECT')
-      return{'FINISHED'}
+      return{'FINISHED'}        
+        
+        
+class mergeObjects(bpy.types.Operator):
+    bl_idname = "object.ms_merge_objects" 
+    bl_label = "TextureAtlas - MergeObjects"
+    bl_description = "Merges Objects and stores Origins"
+    
+    group_name = StringProperty(default='')
+
+    
+    def execute(self, context):
+      
+        #objToDelete = None
+        bpy.ops.object.select_all(action='DESELECT')
+        for obj in bpy.context.scene.objects:
+             if obj.name == self.group_name + "_mergedObject":
+                  obj.select = True
+                  bpy.context.scene.objects.active = obj
+                  bpy.ops.object.delete(use_global=False)        
 
 
+  
+        
+        me = bpy.data.meshes.new(self.group_name + '_mergedObject')
+        ob_merge = bpy.data.objects.new(self.group_name + '_mergedObject', me)
+        ob_merge.location = bpy.context.scene.cursor_location   # position object at 3d-cursor
+        bpy.context.scene.objects.link(ob_merge)                # Link object to scene
+        me.update()
+        ob_merge.select = False      
+      
+        active_object = bpy.data.groups[self.group_name].objects[0]
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        OBJECTLIST = []
+        for object in bpy.data.groups[self.group_name].objects:
+            OBJECTLIST.append(object)   
+            object.select = True   
+        bpy.context.scene.objects.active = active_object      
+
+        
+        ### Make Object Single User
+        #bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, texture=False, animation=False)
+
+        for object in OBJECTLIST:
+            
+            bpy.ops.object.select_all(action='DESELECT')
+            object.select = True
+            
+            ### activate lightmap uv if existant
+            for uv in object.data.uv_textures:
+                if uv.name == self.group_name:
+                    uv.active = True
+                    bpy.context.scene.objects.active = object
+
+                    
+            ### generate temp Duplicate Objects with copied modifier,properties and logic bricks
+            bpy.ops.object.select_all(action='DESELECT')
+            object.select = True
+            bpy.context.scene.objects.active = object
+            bpy.ops.object.duplicate(linked=False, mode='TRANSLATION')
+            active_object = bpy.context.scene.objects.active
+            active_object.select = True
+
+            ### hide render of original mesh
+            object.hide_render = True
+            object.select = False
+
+            ### delete vertex groups of the object
+            for group in active_object.vertex_groups:
+                id = bpy.context.active_object.vertex_groups[group.name]
+                bpy.context.active_object.vertex_groups.remove(id)               
+                
+            ### create vertex groups for each selected object
+            bpy.context.scene.objects.active = bpy.data.objects[active_object.name]
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.object.vertex_group_add()
+            bpy.ops.object.vertex_group_assign()
+            id = len(bpy.context.object.vertex_groups)-1
+            bpy.context.active_object.vertex_groups[id].name = object.name
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(mode = 'OBJECT')
+            
+            
+            ### save object name and object location in merged object
+            item = ob_merge.ms_merged_objects.add()
+            item.name = object.name
+            #item.scale = mathutils.Vector(object.scale)
+            #item.rotation = mathutils.Vector(object.rotation_euler)
+            
+
+            ### merge objects together
+            bpy.ops.object.select_all(action='DESELECT')
+            active_object.select = True
+            ob_merge.select = True
+            bpy.context.scene.objects.active = ob_merge
+            bpy.ops.object.join()
+
+        ### make Unwrap    
+        bpy.ops.object.select_all(action='DESELECT')        
+        ob_merge.select = True
+        bpy.context.scene.objects.active = ob_merge
+        #bpy.ops.object.mode_set(mode = 'EDIT')        
+        #bpy.ops.mesh.select_all(action='SELECT')
+        
+        #if bpy.context.scene.ms_lightmap_groups[self.group_name].unwrap_type == '0':
+               #bpy.ops.uv.smart_project(angle_limit=72.0, island_margin=0.2, user_area_weight=0.0)
+        #elif bpy.context.scene.ms_lightmap_groups[self.group_name].unwrap_type == '1':
+               #bpy.ops.uv.lightmap_pack(PREF_CONTEXT='ALL_FACES', PREF_PACK_IN_ONE=True, PREF_NEW_UVLAYER=False, PREF_APPLY_IMAGE=False, PREF_IMG_PX_SIZE=1024, PREF_BOX_DIV=48, PREF_MARGIN_DIV=0.2)        
+
+               
+        ### remove all materials
+        for material in ob_merge.material_slots:
+             bpy.ops.object.material_slot_remove()
+             
+        #bpy.ops.object.mode_set(mode = 'OBJECT')    
+        return{'FINISHED'}
+
+        
 class separateObjects(bpy.types.Operator):
     bl_idname = "object.ms_separate_objects" 
     bl_label = "TextureAtlas - Separate Objects"
@@ -430,43 +457,50 @@ class separateObjects(bpy.types.Operator):
     group_name = StringProperty(default='')
 
     def execute(self, context):
-      
-        ob_merged = bpy.context.scene.objects.active
+        for obj in bpy.context.scene.objects:
+             if obj.name == self.group_name + "_mergedObject":
+  
+                bpy.ops.object.mode_set(mode = 'OBJECT')
+                bpy.ops.object.select_all(action='DESELECT')
+                ob_merged = obj
 
-        OBJECTLIST = []
-        for object in ob_merged.ms_merged_objects:
-              OBJECTLIST.append(object.name)
-              ### select vertex groups and separate group from merged object
-              bpy.ops.object.select_all(action='DESELECT')
-              ob_merged.select = True
-              bpy.context.scene.objects.active = ob_merged
-              #bpy.context.scene.objects[object.name]
-              #bpy.context.scene.objects.active
-              bpy.ops.object.mode_set(mode = 'EDIT')
-              bpy.ops.mesh.select_all(action='DESELECT')
-              bpy.context.active_object.vertex_groups.active_index = bpy.context.active_object.vertex_groups[object.name].index            
-              bpy.ops.object.vertex_group_select()
-              bpy.ops.mesh.separate(type='SELECTED')
-              bpy.ops.object.mode_set(mode = 'OBJECT')
-              #bpy.context.scene.objects.active.select = False
+                OBJECTLIST = []
+                for object in ob_merged.ms_merged_objects:
+                      OBJECTLIST.append(object.name)
+                      ### select vertex groups and separate group from merged object
+                      bpy.ops.object.select_all(action='DESELECT')
+                      ob_merged.select = True
+                      bpy.context.scene.objects.active = ob_merged
+                      #bpy.context.scene.objects[object.name]
+                      #bpy.context.scene.objects.active
+                      bpy.ops.object.mode_set(mode = 'EDIT')
+                      bpy.ops.mesh.select_all(action='DESELECT')
+                      bpy.context.active_object.vertex_groups.active_index = bpy.context.active_object.vertex_groups[object.name].index            
+                      bpy.ops.object.vertex_group_select()
+                      bpy.ops.mesh.separate(type='SELECTED')
+                      bpy.ops.object.mode_set(mode = 'OBJECT')
+                      #bpy.context.scene.objects.active.select = False
             
-              ### rename separated object to old name
-              ob_merged.select = False
-              ob_separeted = bpy.context.selected_objects[0]
-              ob_original = bpy.context.scene.objects[object.name]
-              ob_original.select = True
-              bpy.context.scene.objects.active = ob_separeted
-              bpy.ops.object.join_uvs()
+                      ### rename separated object to old name
+                      ob_merged.select = False
+                      ob_separeted = bpy.context.selected_objects[0]
+                      ob_original = bpy.context.scene.objects[object.name]
+                      ob_original.select = True
+                      bpy.context.scene.objects.active = ob_separeted
+                      bpy.ops.object.join_uvs()
 
-              ### delete separeted object
-              bpy.ops.object.select_all(action='DESELECT')
-              ob_separeted.select = True
-              bpy.ops.object.delete(use_global=False)
+                      ### unhide render of original mesh
+                      ob_original.hide_render = False                      
+                      
+                      ### delete separeted object
+                      bpy.ops.object.select_all(action='DESELECT')
+                      ob_separeted.select = True
+                      bpy.ops.object.delete(use_global=False)
         
-        ### delete duplicated object
-        bpy.ops.object.select_all(action='DESELECT')
-        ob_merged.select = True
-        bpy.ops.object.delete(use_global=False)
+                ### delete duplicated object
+                bpy.ops.object.select_all(action='DESELECT')
+                ob_merged.select = True
+                bpy.ops.object.delete(use_global=False)
         
             
         return{'FINISHED'}
@@ -482,7 +516,8 @@ def register():
     bpy.utils.register_class(selectGroup)
     bpy.utils.register_class(removeFromGroup)
     
-    bpy.utils.register_class(runTextureAtlas)
+    bpy.utils.register_class(runStart)
+    bpy.utils.register_class(runFinish)
     bpy.utils.register_class(mergeObjects)
     bpy.utils.register_class(separateObjects)
     bpy.utils.register_class(createLightmap)
@@ -509,7 +544,8 @@ def unregister():
     bpy.utils.unregister_class(selectGroup)
     bpy.utils.unregister_class(removeFromGroup)
     
-    bpy.utils.unregister_class(runTextureAtlas)
+    bpy.utils.unregister_class(runStart)
+    bpy.utils.unregister_class(runFinish)
     bpy.utils.unregister_class(mergeObjects)
     bpy.utils.unregister_class(separateObjects)
     bpy.utils.unregister_class(createLightmap)
