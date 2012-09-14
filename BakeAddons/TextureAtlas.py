@@ -493,6 +493,10 @@ class separateObjects(bpy.types.Operator):
                 bpy.ops.object.mode_set(mode = 'OBJECT')
                 bpy.ops.object.select_all(action='DESELECT')
                 ob_merged = obj
+                ob_merged.select = True
+                groupSeparate = bpy.data.groups.new(ob_merged.name)
+                bpy.data.groups[groupSeparate.name].objects.link(ob_merged)
+                ob_merged.select = False
 
                 OBJECTLIST = []
                 for object in ob_merged.ms_merged_objects:
@@ -511,9 +515,14 @@ class separateObjects(bpy.types.Operator):
                       bpy.ops.object.mode_set(mode = 'OBJECT')
                       #bpy.context.scene.objects.active.select = False
             
-                      ### rename separated object to old name
+                      ### copy UVs
+                      ob_separeted = None
+                      for obj in groupSeparate.objects:
+                           if obj != ob_merged:
+                               ob_separeted = obj
+                               
                       ob_merged.select = False
-                      ob_separeted = bpy.context.selected_objects[0]
+                      #ob_separeted = bpy.context.selected_objects[0]
                       ob_original = bpy.context.scene.objects[object.name]
                       ob_original.hide = False
                       ob_original.select = True
