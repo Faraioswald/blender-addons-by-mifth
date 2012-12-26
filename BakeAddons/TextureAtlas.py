@@ -433,6 +433,14 @@ class mergeObjects(bpy.types.Operator):
                 id = bpy.context.active_object.vertex_groups[group.name]
                 bpy.context.active_object.vertex_groups.remove(id)               
                 
+            ### remove unused UV
+            bpy.ops.object.mode_set(mode = 'EDIT')
+            for uv in active_object.data.uv_textures:
+                if uv.name != self.group_name:
+                    uv.active = True
+                    bpy.ops.mesh.uv_texture_remove()
+            bpy.ops.object.mode_set(mode = 'OBJECT')
+            
             ### create vertex groups for each selected object
             bpy.context.scene.objects.active = bpy.data.objects[active_object.name]
             bpy.ops.object.mode_set(mode = 'EDIT')
