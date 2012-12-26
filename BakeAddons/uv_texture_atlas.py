@@ -1,15 +1,13 @@
 bl_info = {
     "name": "Texture Atlas",
     "author": "Andreas Esau, Paul Geraskin",
-    "version": (0, 14),
-    "blender": (2, 6, 3),
-    "api": 50000,
+    "version": (0, 15),
+    "blender": (2, 6, 5),
     "location": "Properties > Render",
     "description": "A simple Texture Atlas for baking of many objects. It creates additional UV",
-    "warning": "This is just a testversion and may contain several bugs!",
-    "wiki_url": "",
-    "tracker_url": "",
-    "category": "Game Engine"}
+    "wiki_url": "http://code.google.com/p/blender-addons-by-mifth/",
+    "tracker_url": "http://code.google.com/p/blender-addons-by-mifth/issues/list",
+    "category": "UV"}
 
 import bpy
 from bpy.props import StringProperty, BoolProperty, EnumProperty, IntProperty, FloatProperty
@@ -353,7 +351,7 @@ class createLightmap(bpy.types.Operator):
           else:
               bpy.ops.object.mode_set(mode = 'EDIT')
               bpy.data.screens['UV Editing'].areas[1].spaces[0].image = bpy.data.images[self.group_name]
-              bpy.data.images[self.group_name].generated_type = 'BLANK'
+              bpy.data.images[self.group_name].generated_type = 'COLOR_GRID'
               bpy.data.images[self.group_name].generated_width = self.resolution
               bpy.data.images[self.group_name].generated_height = self.resolution
             
