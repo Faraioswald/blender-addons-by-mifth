@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Texture Atlas",
     "author": "Andreas Esau, Paul Geraskin",
-    "version": (0, 15),
-    "blender": (2, 6, 5),
+    "version": (0, 16),
+    "blender": (2, 6, 6),
     "location": "Properties > Render",
     "description": "A simple Texture Atlas for baking of many objects. It creates additional UV",
     "wiki_url": "http://code.google.com/p/blender-addons-by-mifth/",
@@ -14,7 +14,7 @@ from bpy.props import StringProperty, BoolProperty, EnumProperty, IntProperty, F
 import mathutils
 
 class TextureAtlas(bpy.types.Panel):
-    bl_label = "TextureAtlas - Lightbaker"
+    bl_label = "Texture Atlas"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "render"
@@ -44,11 +44,14 @@ class TextureAtlas(bpy.types.Panel):
             pass    
         
         row = self.layout.row()
+        row.operator("scene.ms_remove_other_uv", text="Remove Other UVs",icon="GROUP")
+        row.operator("scene.ms_remove_selected", text="Remove Selected Group and UVs",icon="GROUP")          
+        row = self.layout.row()
+        row = self.layout.row()
         row = self.layout.row()
         row.operator("scene.ms_add_selected_to_group", text="Add Selection To Current Group",icon="GROUP")
         row.operator("scene.ms_select_group", text="Select Current Group",icon="GROUP")
-        row.operator("scene.ms_remove_selected", text="Remove Selected Group and UVs",icon="GROUP")        
-        
+
         row = self.layout.row()
         row.operator("object.ms_auto",text="Auto Unwrap",icon="LAMP_SPOT")        
         row = self.layout.row()        
@@ -68,6 +71,7 @@ class runAuto(bpy.types.Operator):
         try:
             group = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index]
             bpy.context.area.type = 'VIEW_3D'
+            bpy.ops.object.mode_set(mode = 'OBJECT')
     
             if group.bake == True and len(bpy.data.groups[group.name].objects) > 0:
 
@@ -95,6 +99,7 @@ class runStart(bpy.types.Operator):
         try:
             group = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index]
             bpy.context.area.type = 'VIEW_3D'
+            bpy.ops.object.mode_set(mode = 'OBJECT')
     
             if group.bake == True and len(bpy.data.groups[group.name].objects) > 0:
 
@@ -122,6 +127,7 @@ class runFinish(bpy.types.Operator):
         try:
             group = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index]
             bpy.context.area.type = 'VIEW_3D'
+            bpy.ops.object.mode_set(mode = 'OBJECT')
     
             if group.bake == True and len(bpy.data.groups[group.name].objects) > 0:
 
@@ -185,6 +191,7 @@ class addSelectedToGroup(bpy.types.Operator):
         for object in bpy.context.selected_objects:
             if object.type == 'MESH':
                 try:
+                    bpy.ops.object.mode_set(mode = 'OBJECT')
                     bpy.data.groups[group_name].objects.link(object)
                 except:
                     pass
@@ -204,6 +211,7 @@ class selectGroup(bpy.types.Operator):
             self.report({'INFO'}, "No Groups Exists!")
 
         try:
+            bpy.ops.object.mode_set(mode = 'OBJECT')
             bpy.ops.object.select_all(action='DESELECT')
             for object in bpy.data.groups[group_name].objects:
                   object.select = True 
@@ -235,6 +243,7 @@ class removeFromGroup(bpy.types.Operator):
         ### set 3dView context
         old_context = bpy.context.area.type        
         bpy.context.area.type = 'VIEW_3D'
+        bpy.ops.object.mode_set(mode = 'OBJECT')
         
         for group in bpy.context.scene.ms_lightmap_groups:        
             group_name = group.name
@@ -253,6 +262,48 @@ class removeFromGroup(bpy.types.Operator):
 
                          
         bpy.context.area.type = old_context
+        return {'FINISHED'}          
+
+class removeOtherUVs(bpy.types.Operator):
+    bl_idname = "scene.ms_remove_other_uv" 
+    bl_label = ""
+    bl_description = "Remove Other UVs"
+    
+    
+    def execute(self, context):
+        try:
+            group_name = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index].name
+        except:
+            self.report({'INFO'}, "No Groups Exists!")
+
+        try:
+            ### set 3dView context
+            old_context = bpy.context.area.type        
+            bpy.context.area.type = 'VIEW_3D'
+            bpy.ops.object.mode_set(mode = 'OBJECT')
+            bpy.ops.object.select_all(action='DESELECT')
+        
+            for object in bpy.data.groups[group_name].objects:
+                  #object.select = True 
+                  bpy.context.scene.objects.active = object
+
+                  #remove UVs
+                  UVLIST = []
+                  for uv in object.data.uv_textures:
+                        if uv.name != group_name:
+                             UVLIST.append(uv.name)
+                             
+                  for uvName in UVLIST:
+                       object.data.uv_textures[uvName].active = True
+                       bpy.ops.mesh.uv_texture_remove()                  
+                             
+                        #bpy.ops.object.select_all(action='DESELECT')                            
+                  
+            bpy.context.area.type = old_context                  
+
+        except:
+            pass
+                    
         return {'FINISHED'}          
         
         
@@ -432,13 +483,16 @@ class mergeObjects(bpy.types.Operator):
                 bpy.context.active_object.vertex_groups.remove(id)               
                 
             ### remove unused UV
-            bpy.ops.object.mode_set(mode = 'EDIT')
+            #remove UVs
+            UVLIST = []
             for uv in active_object.data.uv_textures:
-                if uv.name != self.group_name:
-                    uv.active = True
-                    bpy.ops.mesh.uv_texture_remove()
-            bpy.ops.object.mode_set(mode = 'OBJECT')
-            
+                  if uv.name != self.group_name:
+                       UVLIST.append(uv.name)
+                             
+            for uvName in UVLIST:
+                 active_object.data.uv_textures[uvName].active = True
+                 bpy.ops.mesh.uv_texture_remove()     
+                       
             ### create vertex groups for each selected object
             bpy.context.scene.objects.active = bpy.data.objects[active_object.name]
             bpy.ops.object.mode_set(mode = 'EDIT')
@@ -561,6 +615,7 @@ def register():
     bpy.utils.register_class(addSelectedToGroup)
     bpy.utils.register_class(selectGroup)
     bpy.utils.register_class(removeFromGroup)
+    bpy.utils.register_class(removeOtherUVs)
     
     bpy.utils.register_class(runAuto)
     bpy.utils.register_class(runStart)
@@ -590,6 +645,7 @@ def unregister():
     bpy.utils.unregister_class(addSelectedToGroup)
     bpy.utils.unregister_class(selectGroup)
     bpy.utils.unregister_class(removeFromGroup)
+    bpy.utils.unregister_class(removeOtherUVs)
     
     bpy.utils.unregister_class(runAuto)
     bpy.utils.unregister_class(runStart)
