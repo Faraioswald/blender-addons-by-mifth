@@ -296,8 +296,9 @@ class removeOtherUVs(bpy.types.Operator):
                   for uvName in UVLIST:
                        object.data.uv_textures[uvName].active = True
                        bpy.ops.mesh.uv_texture_remove()                  
-                             
-                        #bpy.ops.object.select_all(action='DESELECT')                            
+                  
+                  UVLIST = [] #clear array
+                  
                   
             bpy.context.area.type = old_context                  
 
@@ -478,9 +479,9 @@ class mergeObjects(bpy.types.Operator):
             object.select = False
 
             ### delete vertex groups of the object
-            for group in active_object.vertex_groups:
-                id = bpy.context.active_object.vertex_groups[group.name]
-                bpy.context.active_object.vertex_groups.remove(id)               
+            #for group in active_object.vertex_groups:
+                #id = bpy.context.active_object.vertex_groups[group.name]
+                #bpy.context.active_object.vertex_groups.remove(id)               
                 
             ### remove unused UV
             #remove UVs
@@ -492,7 +493,10 @@ class mergeObjects(bpy.types.Operator):
             for uvName in UVLIST:
                  active_object.data.uv_textures[uvName].active = True
                  bpy.ops.mesh.uv_texture_remove()     
-                       
+            
+            UVLIST = [] #clear array
+            
+            
             ### create vertex groups for each selected object
             bpy.context.scene.objects.active = bpy.data.objects[active_object.name]
             bpy.ops.object.mode_set(mode = 'EDIT')
@@ -519,6 +523,9 @@ class mergeObjects(bpy.types.Operator):
             bpy.context.scene.objects.active = ob_merge
             bpy.ops.object.join()
 
+        OBJECTLIST = [] #clear array
+        
+        
         ### make Unwrap    
         bpy.ops.object.select_all(action='DESELECT')        
         ob_merge.select = True
@@ -596,7 +603,9 @@ class separateObjects(bpy.types.Operator):
                       bpy.ops.object.select_all(action='DESELECT')
                       ob_separeted.select = True
                       bpy.ops.object.delete(use_global=False)
-        
+
+                OBJECTLIST = [] #clear array                      
+                      
                 ### delete duplicated object
                 bpy.ops.object.select_all(action='DESELECT')
                 ob_merged.select = True
