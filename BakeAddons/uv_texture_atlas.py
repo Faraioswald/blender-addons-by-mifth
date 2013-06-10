@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Texture Atlas",
     "author": "Andreas Esau, Paul Geraskin",
-    "version": (0, 16),
+    "version": (0, 16a),
     "blender": (2, 6, 6),
     "location": "Properties > Render",
     "description": "A simple Texture Atlas for baking of many objects. It creates additional UV",
@@ -348,10 +348,15 @@ class delLightmapGroup(bpy.types.Operator):
         idx = bpy.context.scene.ms_lightmap_groups_index
         group_name = bpy.context.scene.ms_lightmap_groups[idx].name
         
-        for obj in bpy.data.groups[group_name].objects:
-             obj.hide_render = False
+        # Remove Group
+        for groupObj in bpy.data.groups:
+             if groupObj.name == group_name:
+                 for obj in bpy.data.groups[group_name].objects:
+                      obj.hide_render = False
         
-        bpy.data.groups.remove(bpy.data.groups[bpy.context.scene.ms_lightmap_groups[idx].name])
+                 bpy.data.groups.remove(bpy.data.groups[bpy.context.scene.ms_lightmap_groups[idx].name])
+                 
+        # Remove Lightmap Group         
         bpy.context.scene.ms_lightmap_groups.remove(bpy.context.scene.ms_lightmap_groups_index)
         bpy.context.scene.ms_lightmap_groups_index -= 1
         if bpy.context.scene.ms_lightmap_groups_index < 0:
