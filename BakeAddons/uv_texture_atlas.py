@@ -267,7 +267,7 @@ class removeFromGroup(bpy.types.Operator):
 class removeOtherUVs(bpy.types.Operator):
     bl_idname = "scene.ms_remove_other_uv" 
     bl_label = ""
-    bl_description = "Remove Other UVs"
+    bl_description = "Remove Other UVs from Selected"
     
     
     def execute(self, context):
@@ -281,23 +281,25 @@ class removeOtherUVs(bpy.types.Operator):
             old_context = bpy.context.area.type        
             bpy.context.area.type = 'VIEW_3D'
             bpy.ops.object.mode_set(mode = 'OBJECT')
-            bpy.ops.object.select_all(action='DESELECT')
-        
-            for object in bpy.data.groups[group_name].objects:
-                  #object.select = True 
+            #bpy.ops.object.select_all(action='DESELECT')
+            
+            
+            # Remove other UVs of selected objects
+            for object in bpy.context.selected_objects:
                   bpy.context.scene.objects.active = object
-
-                  #remove UVs
-                  UVLIST = []
-                  for uv in object.data.uv_textures:
-                        if uv.name != group_name:
-                             UVLIST.append(uv.name)
+                  if object.type == 'MESH' and bpy.data.groups[group_name] in object.users_group:
+    
+                       #remove UVs
+                       UVLIST = []
+                       for uv in object.data.uv_textures:
+                             if uv.name != group_name:
+                                  UVLIST.append(uv.name)
                              
-                  for uvName in UVLIST:
-                       object.data.uv_textures[uvName].active = True
-                       bpy.ops.mesh.uv_texture_remove()                  
+                       for uvName in UVLIST:
+                            object.data.uv_textures[uvName].active = True
+                            bpy.ops.mesh.uv_texture_remove()                  
                   
-                  UVLIST = [] #clear array
+                       UVLIST = [] #clear array
                   
                   
             bpy.context.area.type = old_context                  
