@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Texture Atlas",
     "author": "Andreas Esau, Paul Geraskin",
-    "version": (0, 16),
+    "version": (0, 17),
     "blender": (2, 6, 6),
     "location": "Properties > Render",
     "description": "A simple Texture Atlas for baking of many objects. It creates additional UV",
@@ -185,6 +185,17 @@ class addSelectedToGroup(bpy.types.Operator):
     def execute(self, context):
         try:
             group_name = bpy.context.scene.ms_lightmap_groups[bpy.context.scene.ms_lightmap_groups_index].name
+            
+            #Create a New Group if it was deleted.
+            isExist = False
+            for groupObj in bpy.data.groups:
+                 if groupObj == group_name:
+                     isExist = True
+                     
+            if isExist == False:
+                bpy.data.groups.new(group_name)
+            
+            
         except:
             self.report({'INFO'}, "No Groups Exists!")
             
@@ -351,6 +362,8 @@ class delLightmapGroup(bpy.types.Operator):
         # Remove Group
         for groupObj in bpy.data.groups:
              if groupObj.name == group_name:
+       
+                 # Unhide Objects if they are hidden
                  for obj in bpy.data.groups[group_name].objects:
                       obj.hide_render = False
         
