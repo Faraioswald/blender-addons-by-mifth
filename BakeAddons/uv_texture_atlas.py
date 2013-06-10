@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Texture Atlas",
     "author": "Andreas Esau, Paul Geraskin",
-    "version": (0, 16a),
+    "version": (0, 16),
     "blender": (2, 6, 6),
     "location": "Properties > Render",
     "description": "A simple Texture Atlas for baking of many objects. It creates additional UV",
