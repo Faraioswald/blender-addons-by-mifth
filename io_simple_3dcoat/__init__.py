@@ -84,136 +84,16 @@ def register():
 
         doApplyModifiers = BoolProperty(
             name="Apply Modifiers",
-            description="Allows to skip import dialog",
+            description="Apply Modifiers...",
             default= True
         )
-    
-        
-        #wasactive = StringProperty(
-            #name="Pass active object",
-        #)
-        #import_box = BoolProperty(
-            #name="Import window",
-            #description="Allows to skip import dialog",
-            #default= True
-        #)
-        #exchange_found = BoolProperty(
-            #name="Exchange Found",
-            #description="Alert if Exchange folder is not found",
-            #default= True
-        #)
-        #export_box = BoolProperty(
-            #name="Export window",
-            #description="Allows to skip export dialog",
-            #default= True
-        #)
-        #export_color = BoolProperty(
-            #name="Export color",
-            #description="Export color texture",
-            #default= True
-        #)
-        #export_spec = BoolProperty(
-            #name="Export specular",
-            #description="Export specular texture",
-            #default= True
-        #)
-        #export_normal = BoolProperty(
-            #name="Export Normal",
-            #description="Export normal texture",
-            #default= True
-        #)
-        #export_disp = BoolProperty(
-            #name="Export Displacement",
-            #description="Export displacement texture",
-            #default= True
-        #)
-        #export_position = BoolProperty(
-            #name="Export Source Position",
-            #description="Export source position",
-            #default= True
-        #)
-        #export_zero_layer = BoolProperty(
-            #name="Export from Layer 0",
-            #description="Export mesh from Layer 0",
-            #default= True
-        #)
-        #export_coarse = BoolProperty(
-            #name="Export Coarse",
-            #description="Export Coarse",
-            #default= True
-        #)
-        #exportfile = BoolProperty(
-            #name="No Import File",
-            #description="Add Modifiers and export",
-            #default= False
-        #)
-        #importmod = BoolProperty(
-            #name="Remove Modifiers",
-            #description="Import and add modifiers",
-            #default= False
-        #)
-        #exportmod = BoolProperty(
-            #name="Modifiers",
-            #description="Export modifiers",
-            #default= False
-        #)
-        #export_pos = BoolProperty(
-            #name="Remember Position",
-            #description="Remember position",
-            #default= True
-        #)
-        #importtextures = BoolProperty(
-            #name="Bring Textures",
-            #description="Import Textures",
-            #default= True
-        #)
-        #importlevel = BoolProperty(
-            #name="Multires. Level",
-            #description="Bring Specific Multires Level",
-            #default= False
-        #)
-        #exportover = BoolProperty(
-            #name="Export Obj",
-            #description="Import Textures",
-            #default= False
-        #)
-        #importmesh = BoolProperty(
-            #name="Mesh",
-            #description="Import Mesh",
-            #default= True
-        #)
 
-        ## copy location
-        #cursor = FloatVectorProperty(
-            #name="Cursor",
-            #description="Location",
-            #subtype="XYZ",
-            #default=(0.0, 0.0, 0.0)
-        #)
-        #loca = FloatVectorProperty(
-            #name="location",
-            #description="Location",
-            #subtype="XYZ",
-            #default=(0.0, 0.0, 0.0)
-        #)
-        #rota = FloatVectorProperty(
-            #name="location",
-            #description="Location",
-            #subtype="EULER",
-            #default=(0.0, 0.0, 0.0)
-        #)
-        #scal = FloatVectorProperty(
-            #name="location",
-            #description="Location",
-            #subtype="XYZ",
-            #default=(0.0, 0.0, 0.0)
-        #)
-        #dime = FloatVectorProperty(
-            #name="dimension",
-            #description="Dimension",
-            #subtype="XYZ",
-            #default=(0.0, 0.0, 0.0)
-        #)
+        exportMaterials = BoolProperty(
+            name="Export Materials",
+            description="Export Materials...",
+            default= True
+        )
+
 
         type = EnumProperty( name= "Export Type",
             description= "Different Export Types",
