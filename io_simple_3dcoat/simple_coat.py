@@ -142,7 +142,8 @@ class MainPanel3DCoat(bpy.types.Panel):
 
         row = layout.row()
         row.prop(simple3Dcoat,"doApplyModifiers",text="Apply Modifiers")
-
+        row = layout.row()
+        row.prop(simple3Dcoat,"exportMaterials",text="Export Materials")
 
 class ExportScene3DCoat(bpy.types.Operator):
     bl_idname = "export_applink.simple_3d_coat"
@@ -164,7 +165,7 @@ class ExportScene3DCoat(bpy.types.Operator):
 
         
             bpy.ops.export_scene.obj(filepath=simple3Dcoat.exchangedir + activeobj + '.obj', use_selection=True,
-            use_mesh_modifiers=simple3Dcoat.doApplyModifiers, use_blen_objects=True, use_materials = True,
+            use_mesh_modifiers=simple3Dcoat.doApplyModifiers, use_blen_objects=True, use_materials = simple3Dcoat.exportMaterials,
             keep_vertex_order = True,axis_forward='-Z',axis_up='Y')
 
             file = open(importfile, "w")
