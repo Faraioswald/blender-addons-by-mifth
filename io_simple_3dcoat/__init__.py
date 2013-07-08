@@ -76,12 +76,17 @@ def register():
             name="FilePath",
             subtype="DIR_PATH"
         )
+
         exchangefolder = StringProperty(
             name="FilePath",
             subtype="DIR_PATH"
         )
 
-
+        doApplyModifiers = BoolProperty(
+            name="Apply Modifiers",
+            description="Allows to skip import dialog",
+            default= True
+        )
     
         
         #wasactive = StringProperty(
