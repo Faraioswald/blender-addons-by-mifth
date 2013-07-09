@@ -19,7 +19,7 @@
 bl_info = {
     "name": "Simple 3D-Coat Applink",
     "author": "Kalle-Samuli Riihikoski (haikalle), Paul Geraskin",
-    "version": (0, 1, 0),
+    "version": (0, 1, 1),
     "blender": (2, 67, 0),
     "location": "Scene > Simple 3D-Coat Applink",
     "description": "Transfer data between 3D-Coat/Blender",
