@@ -142,20 +142,29 @@ class ExportScene3DCoat(bpy.types.Operator):
         scene = context.scene
 
         if len(bpy.context.selected_objects) > 0 and os.path.isdir(simple3Dcoat.exchangedir):
-
             importfile = simple3Dcoat.exchangedir
             importfile += ('%simport.txt' % (os.sep))
-            blenderExportName = 'blenderExport'
 
+            # Paths for export/import
+            blenderExportName = 'blenderExport'
+            blenderImportName = 'blenderImport'
+
+            # create Simple3DCoat directory
+            simple3DCoatDir = simple3Dcoat.exchangedir + 'BlenderSimple3DCoat' + os.sep
+            if not(os.path.isdir(simple3DCoatDir)):
+                os.makedirs(simple3DCoatDir)
+
+            # Export to Obj
             bpy.ops.export_scene.obj(
-                filepath=simple3Dcoat.exchangedir + blenderExportName + '.obj', use_selection=True, use_mesh_modifiers=simple3Dcoat.doApplyModifiers,
+                filepath=simple3DCoatDir + blenderExportName + '.obj', use_selection=True, use_mesh_modifiers=simple3Dcoat.doApplyModifiers,
                 use_blen_objects=True, use_normals=True, use_materials=simple3Dcoat.exportMaterials, keep_vertex_order=True, axis_forward='-Z', axis_up='Y')
 
+            # Save import file
             file = open(importfile, "w")
             file.write("%s" %
-                       (simple3Dcoat.exchangedir + blenderExportName + '.obj'))
+                       (simple3DCoatDir + blenderExportName + '.obj'))
             file.write("\n%s" %
-                       (simple3Dcoat.exchangedir + blenderExportName + '.obj'))
+                       (simple3DCoatDir + blenderImportName + '.obj'))
             file.write("\n[%s]" % (simple3Dcoat.type))
             file.close()
 
