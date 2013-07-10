@@ -19,7 +19,7 @@
 bl_info = {
     "name": "Simple 3D-Coat Applink",
     "author": "Kalle-Samuli Riihikoski (haikalle), Paul Geraskin",
-    "version": (0, 1, 1),
+    "version": (0, 2),
     "blender": (2, 67, 0),
     "location": "Scene > Simple 3D-Coat Applink",
     "description": "Transfer data between 3D-Coat/Blender",
@@ -34,10 +34,9 @@ bl_info = {
 if "bpy" in locals():
     import imp
     imp.reload(simple_coat)
-    # imp.reload(tex)
 else:
     from . import simple_coat
-    # from . import tex
+
 
 import bpy
 from bpy.props import *
@@ -49,40 +48,7 @@ def register():
     bpy.simple3Dcoat['status'] = 0
     bpy.simple3Dcoat['kuva'] = 1
 
-    class ObjectCoat3D(bpy.types.PropertyGroup):
-        objpath = StringProperty(name="Object_Path")
-        applink_name = StringProperty(name="Object_Applink_name")
-        coatpath = StringProperty(name="Coat_Path")
-        objectdir = StringProperty(name="ObjectPath", subtype="FILE_PATH")
-        # objecttime = StringProperty(name="ObjectTime", subtype="FILE_PATH")
-        # texturefolder = StringProperty(name="Texture folder:",
-        # subtype="DIR_PATH")
-        path3b = StringProperty(name="3B Path", subtype="FILE_PATH")
-        export_on = BoolProperty(
-            name="Export_On", description="Add Modifiers and export", default=False)
-        # dime = FloatVectorProperty(name="dime",description="Dimension")
-        # loc = FloatVectorProperty(name="Location",description="Location")
-        # rot = FloatVectorProperty(name="Rotation",description="Rotation",subtype='EULER')
-        # sca = FloatVectorProperty(name="Scale",description="Scale")
-
     class SimpleSceneCoat3D(bpy.types.PropertyGroup):
-
-        defaultfolder = StringProperty(
-            name="FilePath",
-            subtype="DIR_PATH",
-        )
-        cursor_loc = FloatVectorProperty(
-            name="Cursor_loc", description="location")
-
-        exchangedir = StringProperty(
-            name="FilePath",
-            subtype="DIR_PATH"
-        )
-
-        exchangefolder = StringProperty(
-            name="FilePath",
-            subtype="DIR_PATH"
-        )
 
         doApplyModifiers = BoolProperty(
             name="Apply Modifiers",
@@ -98,28 +64,22 @@ def register():
 
         type = EnumProperty(name="Export Type",
                             description="Different Export Types",
-                            items=(("ppp",   "Per-Pixel Painting", ""),
-                           ("mv",   "Microvertex Painting", ""),
-                                ("ptex",   "Ptex Painting", ""),
-                                ("uv",   "UV-Mapping", ""),
-                                ("ref",  "Reference Mesh", ""),
-                                ("retopo",  "Retopo mesh as new layer", ""),
-                                ("vox",  "Mesh As Voxel Object", ""),
-                                ("alpha",  "Mesh As New Pen Alpha", ""),
-                                ("prim",  "Mesh As Voxel Primitive", ""),
+                            items=(("ppp", "Per-Pixel Painting", ""),
+                           ("mv", "Microvertex Painting", ""),
+                                ("ptex", "Ptex Painting", ""),
+                                ("uv", "UV-Mapping", ""),
+                                ("ref", "Reference Mesh", ""),
+                                ("retopo", "Retopo mesh as new layer", ""),
+                                ("vox", "Mesh As Voxel Object", ""),
+                                ("alpha", "Mesh As New Pen Alpha", ""),
+                                ("prim", "Mesh As Voxel Primitive", ""),
                                 ("curv", "Mesh As a Curve Profile", ""),
-                                ("autopo",  "Mesh For Auto-retopology", ""),
+                                ("autopo", "Mesh For Auto-retopology", ""),
                             ),
                             default= "ppp"
                             )
 
     bpy.utils.register_module(__name__)
-
-    bpy.types.Object.simple3Dcoat = PointerProperty(
-        name="Applink Variables",
-        type=ObjectCoat3D,
-        description="Applink variables"
-    )
 
     bpy.types.Scene.simple3Dcoat = PointerProperty(
         name="Applink Variables",
@@ -131,10 +91,8 @@ def register():
 def unregister():
     import bpy
 
-    del bpy.types.Object.simple3Dcoat
     del bpy.types.Scene.simple3Dcoat
     del bpy.simple3Dcoat
-
     bpy.utils.unregister_module(__name__)
 
 

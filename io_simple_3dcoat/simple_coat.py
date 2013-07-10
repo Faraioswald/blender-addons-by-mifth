@@ -19,80 +19,13 @@
 
 import bpy
 from bpy.props import *
-# from io_simple3Dcoat import tex
+from bpy.types import Operator, AddonPreferences
 import os
 
 
 bpy.simple3Dcoat = dict()
 bpy.simple3Dcoat['active_coat'] = ''
 bpy.simple3Dcoat['status'] = 0
-# def set_exchange_folder():
-    # platform = os.sys.platform
-    # simple3Dcoat = bpy.context.scene.simple3Dcoat
-    # Blender_export = ""
-
-
-    # if(platform == 'win32'):
-        # exchange = os.path.expanduser("~") + os.sep + 'Documents' + os.sep + '3D-CoatV4' + os.sep +'Exchange'
-        # if not(os.path.isdir(exchange)):
-            # exchange = os.path.expanduser("~") + os.sep + 'Documents' + os.sep + '3D-CoatV3' + os.sep +'Exchange'
-    # else:
-        # exchange = os.path.expanduser("~") + os.sep + '3D-CoatV4' + os.sep + 'Exchange'
-        # if not(os.path.isdir(exchange)):
-            # exchange = os.path.expanduser("~") + os.sep + '3D-CoatV3' + os.sep + 'Exchange'
-    # if(not(os.path.isdir(exchange))):
-        # exchange = simple3Dcoat.exchangedir
-
-    # if(os.path.isdir(exchange)):
-        # bpy.simple3Dcoat['status'] = 1
-        # if(platform == 'win32'):
-            # exchange_path = os.path.expanduser("~") + os.sep + 'Documents' + os.sep + '3DC2Blender' + os.sep + 'Exchange_folder.txt'
-            # applink_folder = os.path.expanduser("~") + os.sep + 'Documents' + os.sep + '3DC2Blender'
-            # if(not(os.path.isdir(applink_folder))):
-                # os.makedirs(applink_folder)
-        # else:
-            # exchange_path = os.path.expanduser("~") + os.sep + 'Documents' + os.sep + '3DC2Blender' + os.sep + 'Exchange_folder.txt'
-            # applink_folder = os.path.expanduser("~") + os.sep + 'Documents' + os.sep + '3DC2Blender'
-            # if(not(os.path.isdir(applink_folder))):
-                # os.makedirs(applink_folder)
-        # file = open(exchange_path, "w")
-        # file.write("%s"%(simple3Dcoat.exchangedir))
-        # file.close()
-
-    # else:
-        # if(platform == 'win32'):
-            # exchange_path = os.path.expanduser("~") + os.sep + 'Documents' + os.sep + '3DC2Blender' + os.sep + 'Exchange_folder.txt'
-        # else:
-            # exchange_path = os.path.expanduser("~") + os.sep + '3DC2Blender' + os.sep + 'Exchange_folder.txt'
-        # if(os.path.isfile(exchange_path)):
-            # ex_path =''
-
-            # ex_pathh = open(exchange_path)
-            # for line in ex_pathh:
-                # ex_path = line
-                # break
-            # ex_pathh.close()
-
-            # if(os.path.isdir(ex_path) and ex_path.rfind('Exchange') >= 0):
-                # exchange = ex_path
-                # bpy.simple3Dcoat['status'] = 1
-            # else:
-                # bpy.simple3Dcoat['status'] = 0
-        # else:
-            # bpy.simple3Dcoat['status'] = 0
-    # if(bpy.simple3Dcoat['status'] == 1):
-        # Blender_folder = ("%s%sBlender"%(exchange,os.sep))
-        # Blender_export = Blender_folder
-        # path3b_now = exchange
-        # path3b_now += ('last_saved_3b_file.txt')
-        # Blender_export += ('%sexport.txt'%(os.sep))
-
-        # if(not(os.path.isdir(Blender_folder))):
-            # os.makedirs(Blender_folder)
-            # Blender_folder = os.path.join(Blender_folder,"run.txt")
-            # file = open(Blender_folder, "w")
-            # file.close()
-    # return exchange
 
 
 class MainPanel3DCoat(bpy.types.Panel):
@@ -122,12 +55,29 @@ class MainPanel3DCoat(bpy.types.Panel):
         colL.operator("import_applink.simple_3d_coat", text="ImportScene")
 
         row = layout.row()
-        row.prop(simple3Dcoat, "exchangedir", text="ExchangeDir")
-
-        row = layout.row()
         row.prop(simple3Dcoat, "doApplyModifiers", text="Apply Modifiers")
         row = layout.row()
         row.prop(simple3Dcoat, "exportMaterials", text="Export Materials")
+
+
+class Coat3DAddonPreferences(AddonPreferences):
+    # this must match the addon name, use '__package__'
+    # when defining this in a submodule of a python package.
+    # bl_idname = __name__
+    bl_idname = __package__
+
+    exchangedir = StringProperty(
+        name="ExchangeFolder",
+        subtype="DIR_PATH",
+        default="",
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        row.label(text="Please, set Exchanges Folder and save Preferences")
+        row = layout.row()
+        row.prop(self, "exchangedir")
 
 
 class ExportScene3DCoat(bpy.types.Operator):
@@ -137,12 +87,16 @@ class ExportScene3DCoat(bpy.types.Operator):
     bl_options = {'UNDO'}
 
     def invoke(self, context, event):
+        # Addon Preferences
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+
         checkname = ''
         simple3Dcoat = bpy.context.scene.simple3Dcoat
         scene = context.scene
 
-        if len(bpy.context.selected_objects) > 0 and os.path.isdir(simple3Dcoat.exchangedir):
-            importfile = simple3Dcoat.exchangedir
+        if len(bpy.context.selected_objects) > 0 and os.path.isdir(addon_prefs.exchangedir):
+            importfile = addon_prefs.exchangedir
             importfile += ('%simport.txt' % (os.sep))
 
             # Paths for export/import
@@ -150,7 +104,8 @@ class ExportScene3DCoat(bpy.types.Operator):
             blenderImportName = 'blenderImport'
 
             # create Simple3DCoat directory
-            simple3DCoatDir = simple3Dcoat.exchangedir + 'BlenderSimple3DCoat' + os.sep
+            simple3DCoatDir = addon_prefs.exchangedir + \
+                'BlenderSimple3DCoat' + os.sep
             if not(os.path.isdir(simple3DCoatDir)):
                 os.makedirs(simple3DCoatDir)
 
@@ -182,11 +137,15 @@ class ImportScene3DCoat(bpy.types.Operator):
     bl_options = {'UNDO'}
 
     def invoke(self, context, event):
+        # Addon Preferences
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+
         scene = context.scene
         simple3Dcoat = bpy.context.scene.simple3Dcoat
         coat = bpy.simple3Dcoat
 
-        exchangeFolder = simple3Dcoat.exchangedir
+        exchangeFolder = addon_prefs.exchangedir
         exchangeFolder += ('%sexport.txt' % (os.sep))
         new_applink_name = None
 
