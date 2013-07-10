@@ -21,6 +21,7 @@ import bpy
 from bpy.props import *
 from bpy.types import Operator, AddonPreferences
 import os
+import shutil
 
 
 bpy.simple3Dcoat = dict()
@@ -45,6 +46,8 @@ class MainPanel3DCoat(bpy.types.Panel):
 
         # GUI
         row = layout.row()
+        row.label(text="Import/Export Objects")
+        row = layout.row()
         row.prop(simple3Dcoat, "type", text="")
         row = layout.row()
 
@@ -52,12 +55,22 @@ class MainPanel3DCoat(bpy.types.Panel):
         colR = row.column()
 
         colR.operator("export_applink.simple_3d_coat", text="ExportObjects")
-        colL.operator("import_applink.simple_3d_coat", text="ImportScene")
+        colL.operator("import_applink.simple_3d_coat", text="ImportObjects")
 
         row = layout.row()
         row.prop(simple3Dcoat, "doApplyModifiers", text="Apply Modifiers")
         row = layout.row()
         row.prop(simple3Dcoat, "exportMaterials", text="Export Materials")
+        row = layout.row()
+        row = layout.row()
+        row.label(text="Copy Textures")
+        row = layout.row()
+        row.prop(simple3Dcoat, "copyTexturesPath", text="")
+        row = layout.row()
+        row.operator("copytextures.simple_3d_coat", text="Copy Textures to a Path")
+        row = layout.row()
+        row = layout.row()
+        row.operator("clearexchange.simple_3d_coat", text="Clear Exchange Folder")
 
 
 class Coat3DAddonPreferences(AddonPreferences):
@@ -91,21 +104,20 @@ class ExportScene3DCoat(bpy.types.Operator):
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
 
-        checkname = ''
+        #checkname = ''
         simple3Dcoat = bpy.context.scene.simple3Dcoat
-        scene = context.scene
+        #scene = context.scene
 
         if len(bpy.context.selected_objects) > 0 and os.path.isdir(addon_prefs.exchangedir):
             importfile = addon_prefs.exchangedir
             importfile += ('%simport.txt' % (os.sep))
 
             # Paths for export/import
-            blenderExportName = 'blenderExport'
-            blenderImportName = 'blenderImport'
+            blenderExportName = "export"
+            blenderImportName = "import"
 
             # create Simple3DCoat directory
-            simple3DCoatDir = addon_prefs.exchangedir + \
-                'BlenderSimple3DCoat' + os.sep
+            simple3DCoatDir = addon_prefs.exchangedir + "BlenderSimple3DCoat" + os.sep
             if not(os.path.isdir(simple3DCoatDir)):
                 os.makedirs(simple3DCoatDir)
 
@@ -141,30 +153,83 @@ class ImportScene3DCoat(bpy.types.Operator):
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
 
-        scene = context.scene
+        #scene = context.scene
         simple3Dcoat = bpy.context.scene.simple3Dcoat
-        coat = bpy.simple3Dcoat
+        #coat = bpy.simple3Dcoat
 
-        exchangeFolder = addon_prefs.exchangedir
-        exchangeFolder += ('%sexport.txt' % (os.sep))
+        exchangeFile = addon_prefs.exchangedir
+        exchangeFile += ('%sexport.txt' % (os.sep))
+        simple3DCoatDir = addon_prefs.exchangedir + "BlenderSimple3DCoat" + os.sep
         new_applink_name = None
 
-        if(os.path.isfile(exchangeFolder)):
-            obj_pathh = open(exchangeFolder)
+        if(os.path.isfile(exchangeFile) and os.path.isdir(simple3DCoatDir)):
+            obj_pathh = open(exchangeFile)
 
             for line in obj_pathh:
                 new_applink_name = line
-                bpy.ops.import_scene.obj(
-                    filepath=new_applink_name, axis_forward='-Z', axis_up='Y', use_image_search=False)
+                if os.path.isfile(new_applink_name):
+                    bpy.ops.import_scene.obj(filepath=new_applink_name, axis_forward='-Z', axis_up='Y', use_image_search=False)
+                else:
+                    self.report({'INFO'}, "No Imported Objects!!!")
                 break
             obj_pathh.close()
         else:
-            self.report(
-                {'INFO'}, "No Imported Objects or Bad Exchange Folder!!!")
+            self.report({'INFO'}, "No Imported Objects or Bad Exchange Folder!!!")
 
         return {'FINISHED'}
 
 
+class CopyTextures3DCoat(bpy.types.Operator):
+    bl_idname = "copytextures.simple_3d_coat"
+    bl_label = "Copy Textures"
+    bl_description = "Copy Textures To a Custom Folder"
+
+    def invoke(self, context, event):
+        # Addon Preferences
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+
+        simple3Dcoat = bpy.context.scene.simple3Dcoat
+        texturesFile = addon_prefs.exchangedir
+        texturesFile += ('%stextures.txt' % (os.sep))
+        simple3DCoatDir = addon_prefs.exchangedir + "BlenderSimple3DCoat" + os.sep
+        copyToFolder = simple3Dcoat.copyTexturesPath
+
+        if os.path.isdir(copyToFolder) and os.path.isfile(texturesFile) and os.path.isdir(simple3DCoatDir):
+            tex_file = open(texturesFile)
+            for line in tex_file:
+                if line.find(addon_prefs.exchangedir) >= 0:
+                    lineFixed = line.replace("\n", "");
+                    if os.path.isfile(lineFixed):
+                        shutil.copy2(lineFixed, copyToFolder)
+                    else:
+                        self.report({'INFO'}, "Texture does not exist!!")
+
+            tex_file.close()
+        else:
+            self.report({'INFO'}, "Folder does not exist!!")
+
+        return {'FINISHED'}
+
+
+class ClearExchangeFolder(bpy.types.Operator):
+    bl_idname = "clearexchange.simple_3d_coat"
+    bl_label = "Clear Exchange Folder"
+    bl_description = "Clear Exchange Folder.."
+
+    def invoke(self, context, event):
+        # Addon Preferences
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        simple3DCoatDir = addon_prefs.exchangedir + "BlenderSimple3DCoat" + os.sep
+
+        # Remove BlenderSimple3DCoat Folder
+        if os.path.isdir(simple3DCoatDir):
+            shutil.rmtree(simple3DCoatDir)
+
+        return {'FINISHED'}
+
+    
 def register():
     bpy.utils.register_module(__name__)
 

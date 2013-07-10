@@ -19,7 +19,7 @@
 bl_info = {
     "name": "Simple 3D-Coat Applink",
     "author": "Kalle-Samuli Riihikoski (haikalle), Paul Geraskin",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (2, 67, 0),
     "location": "Scene > Simple 3D-Coat Applink",
     "description": "Transfer data between 3D-Coat/Blender",
@@ -60,6 +60,12 @@ def register():
             name="Export Materials",
             description="Export Materials...",
             default=True
+        )
+
+        copyTexturesPath = StringProperty(
+            name="Copy Textures Path",
+            subtype="DIR_PATH",
+            default="",
         )
 
         type = EnumProperty(name="Export Type",
