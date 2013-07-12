@@ -63,7 +63,7 @@ class MainPanel3DCoat(bpy.types.Panel):
         row.prop(simple3Dcoat, "exportMaterials", text="Export Materials")
         row = layout.row()
         row = layout.row()
-        row.label(text="Copy Textures")
+        row.label(text="Textures Path")
         row = layout.row()
         row.prop(simple3Dcoat, "copyTexturesPath", text="")
         #row = layout.row()
