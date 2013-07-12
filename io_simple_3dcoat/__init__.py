@@ -19,7 +19,7 @@
 bl_info = {
     "name": "Simple 3D-Coat Applink",
     "author": "Kalle-Samuli Riihikoski (haikalle), Paul Geraskin",
-    "version": (0, 3),
+    "version": (0, 3, 1),
     "blender": (2, 67, 0),
     "location": "Scene > Simple 3D-Coat Applink",
     "description": "Transfer data between 3D-Coat/Blender",
@@ -77,6 +77,7 @@ def register():
                                 ("ref", "Reference Mesh", ""),
                                 ("retopo", "Retopo mesh as new layer", ""),
                                 ("vox", "Mesh As Voxel Object", ""),
+                                ("voxcombine", "Mesh As single Voxel Object", ""),
                                 ("alpha", "Mesh As New Pen Alpha", ""),
                                 ("prim", "Mesh As Voxel Primitive", ""),
                                 ("curv", "Mesh As a Curve Profile", ""),
