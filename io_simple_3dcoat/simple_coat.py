@@ -66,8 +66,8 @@ class MainPanel3DCoat(bpy.types.Panel):
         row.label(text="Copy Textures")
         row = layout.row()
         row.prop(simple3Dcoat, "copyTexturesPath", text="")
-        row = layout.row()
-        row.operator("copytextures.simple_3d_coat", text="Copy Textures to a Path")
+        #row = layout.row()
+        #row.operator("copytextures.simple_3d_coat", text="Copy Textures to a Path")
         row = layout.row()
         row = layout.row()
         row.operator("clearexchange.simple_3d_coat", text="Clear Exchange Folder")
@@ -133,6 +133,12 @@ class ExportScene3DCoat(bpy.types.Operator):
             file.write("\n%s" %
                        (simple3DCoatDir + blenderImportName + '.obj'))
             file.write("\n[%s]" % (simple3Dcoat.type))
+
+            # Copy textures to a custom path
+            copyToFolder = simple3Dcoat.copyTexturesPath
+            if os.path.isdir(copyToFolder):
+                file.write("\n[TexOutput:%s]"%(copyToFolder))
+
             file.close()
 
         else:
@@ -179,37 +185,37 @@ class ImportScene3DCoat(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CopyTextures3DCoat(bpy.types.Operator):
-    bl_idname = "copytextures.simple_3d_coat"
-    bl_label = "Copy Textures"
-    bl_description = "Copy Textures To a Custom Folder"
+#class CopyTextures3DCoat(bpy.types.Operator):
+    #bl_idname = "copytextures.simple_3d_coat"
+    #bl_label = "Copy Textures"
+    #bl_description = "Copy Textures To a Custom Folder"
 
-    def invoke(self, context, event):
-        # Addon Preferences
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+    #def invoke(self, context, event):
+        ## Addon Preferences
+        #user_preferences = context.user_preferences
+        #addon_prefs = user_preferences.addons[__package__].preferences
 
-        simple3Dcoat = bpy.context.scene.simple3Dcoat
-        texturesFile = addon_prefs.exchangedir
-        texturesFile += ('%stextures.txt' % (os.sep))
-        simple3DCoatDir = addon_prefs.exchangedir + "BlenderSimple3DCoat" + os.sep
-        copyToFolder = simple3Dcoat.copyTexturesPath
+        #simple3Dcoat = bpy.context.scene.simple3Dcoat
+        #texturesFile = addon_prefs.exchangedir
+        #texturesFile += ('%stextures.txt' % (os.sep))
+        #simple3DCoatDir = addon_prefs.exchangedir + "BlenderSimple3DCoat" + os.sep
+        #copyToFolder = simple3Dcoat.copyTexturesPath
 
-        if os.path.isdir(copyToFolder) and os.path.isfile(texturesFile) and os.path.isdir(simple3DCoatDir):
-            tex_file = open(texturesFile)
-            for line in tex_file:
-                if line.find(addon_prefs.exchangedir) >= 0:
-                    lineFixed = line.replace("\n", "");
-                    if os.path.isfile(lineFixed):
-                        shutil.copy2(lineFixed, copyToFolder)
-                    else:
-                        self.report({'INFO'}, "Texture does not exist!!")
+        #if os.path.isdir(copyToFolder) and os.path.isfile(texturesFile) and os.path.isdir(simple3DCoatDir):
+            #tex_file = open(texturesFile)
+            #for line in tex_file:
+                #if line.find(addon_prefs.exchangedir) >= 0:
+                    #lineFixed = line.replace("\n", "");
+                    #if os.path.isfile(lineFixed):
+                        #shutil.copy2(lineFixed, copyToFolder)
+                    #else:
+                        #self.report({'INFO'}, "Texture does not exist!!")
 
-            tex_file.close()
-        else:
-            self.report({'INFO'}, "Folder does not exist!!")
+            #tex_file.close()
+        #else:
+            #self.report({'INFO'}, "Folder does not exist!!")
 
-        return {'FINISHED'}
+        #return {'FINISHED'}
 
 
 class ClearExchangeFolder(bpy.types.Operator):
