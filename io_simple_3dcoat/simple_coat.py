@@ -72,6 +72,11 @@ class MainPanel3DCoat(bpy.types.Panel):
         row = layout.row()
         row.operator("clearexchange.simple_3d_coat", text="Clear Exchange Folder")
 
+        row = layout.row()
+        row.label(text="Export Type")
+        row = layout.row()
+        row.prop(simple3Dcoat, "exportModelType", text='export Model Type', expand=True)
+
 
 class Coat3DAddonPreferences(AddonPreferences):
     # this must match the addon name, use '__package__'
@@ -116,22 +121,37 @@ class ExportScene3DCoat(bpy.types.Operator):
             blenderExportName = "export"
             blenderImportName = "import"
 
+            # Model Extension
+            exportModelExtension = ".obj"
+            if simple3Dcoat.exportModelType == 'FBX':
+                exportModelExtension = ".fbx"
+            elif simple3Dcoat.exportModelType == 'DAE':
+                exportModelExtension = ".dae"
+
             # create Simple3DCoat directory
             simple3DCoatDir = addon_prefs.exchangedir + "BlenderSimple3DCoat" + os.sep
             if not(os.path.isdir(simple3DCoatDir)):
                 os.makedirs(simple3DCoatDir)
 
-            # Export to Obj
-            bpy.ops.export_scene.obj(
-                filepath=simple3DCoatDir + blenderExportName + '.obj', use_selection=True, use_mesh_modifiers=simple3Dcoat.doApplyModifiers,
-                use_blen_objects=True, use_normals=True, use_materials=simple3Dcoat.exportMaterials, keep_vertex_order=True, axis_forward='-Z', axis_up='Y')
+            # Model Path
+            modelExportPath = simple3DCoatDir + blenderExportName + exportModelExtension
+
+            # Export Model
+            if simple3Dcoat.exportModelType == 'OBJ':
+                bpy.ops.export_scene.obj(
+                    filepath=modelExportPath, use_selection=True, use_mesh_modifiers=simple3Dcoat.doApplyModifiers,
+                    use_blen_objects=True, use_normals=True, use_materials=simple3Dcoat.exportMaterials, keep_vertex_order=True, axis_forward='-Z', axis_up='Y')
+            elif simple3Dcoat.exportModelType == 'FBX':
+                bpy.ops.export_scene.fbx(check_existing=True, filepath=modelExportPath, filter_glob="*.fbx", use_selection=True, global_scale=1.0, axis_forward='-Z', axis_up='Y', object_types={'MESH'}, use_mesh_modifiers=simple3Dcoat.doApplyModifiers, mesh_smooth_type='FACE', use_mesh_edges=False, use_armature_deform_only=False, use_anim=False, use_anim_action_all=False, use_default_take=True, use_anim_optimize=True, anim_optimize_precision=6.0, path_mode='AUTO', batch_mode='OFF', use_batch_own_dir=True, use_metadata=True)
+            elif simple3Dcoat.exportModelType == 'DAE':
+                bpy.ops.wm.collada_export(filepath=modelExportPath, apply_modifiers=simple3Dcoat.doApplyModifiers, selected=True, include_children=True, include_armatures=False, include_shapekeys=False, include_uv_textures=False, include_material_textures=False, use_texture_copies=False, use_object_instantiation=True)
 
             # Save import file
             file = open(importfile, "w")
             file.write("%s" %
-                       (simple3DCoatDir + blenderExportName + '.obj'))
+                       (simple3DCoatDir + blenderExportName + exportModelExtension))
             file.write("\n%s" %
-                       (simple3DCoatDir + blenderImportName + '.obj'))
+                       (simple3DCoatDir + blenderImportName + exportModelExtension))
             file.write("\n[%s]" % (simple3Dcoat.type))
 
             # Copy textures to a custom path
@@ -174,7 +194,15 @@ class ImportScene3DCoat(bpy.types.Operator):
             for line in obj_pathh:
                 new_applink_name = line
                 if os.path.isfile(new_applink_name):
-                    bpy.ops.import_scene.obj(filepath=new_applink_name, axis_forward='-Z', axis_up='Y', use_image_search=False)
+                    if new_applink_name.endswith(".obj"):
+                        bpy.ops.import_scene.obj(filepath=new_applink_name, axis_forward='-Z', axis_up='Y', use_image_search=False)
+                    elif new_applink_name.endswith(".fbx"):
+                        bpy.ops.import_scene.fbx(filepath=new_applink_name, filter_glob="*.fbx", use_image_search=False, use_alpha_decals=False, decal_offset=0.0, axis_forward='-Z', axis_up='Y', global_scale=1.0)
+                    elif new_applink_name.endswith(".dae"):
+                        bpy.ops.wm.collada_import(filepath=new_applink_name)
+
+                    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False) # Apply Rotation
+
                 else:
                     self.report({'INFO'}, "No Imported Objects!!!")
                 break
@@ -183,39 +211,6 @@ class ImportScene3DCoat(bpy.types.Operator):
             self.report({'INFO'}, "No Imported Objects or Bad Exchange Folder!!!")
 
         return {'FINISHED'}
-
-
-#class CopyTextures3DCoat(bpy.types.Operator):
-    #bl_idname = "copytextures.simple_3d_coat"
-    #bl_label = "Copy Textures"
-    #bl_description = "Copy Textures To a Custom Folder"
-
-    #def invoke(self, context, event):
-        ## Addon Preferences
-        #user_preferences = context.user_preferences
-        #addon_prefs = user_preferences.addons[__package__].preferences
-
-        #simple3Dcoat = bpy.context.scene.simple3Dcoat
-        #texturesFile = addon_prefs.exchangedir
-        #texturesFile += ('%stextures.txt' % (os.sep))
-        #simple3DCoatDir = addon_prefs.exchangedir + "BlenderSimple3DCoat" + os.sep
-        #copyToFolder = simple3Dcoat.copyTexturesPath
-
-        #if os.path.isdir(copyToFolder) and os.path.isfile(texturesFile) and os.path.isdir(simple3DCoatDir):
-            #tex_file = open(texturesFile)
-            #for line in tex_file:
-                #if line.find(addon_prefs.exchangedir) >= 0:
-                    #lineFixed = line.replace("\n", "");
-                    #if os.path.isfile(lineFixed):
-                        #shutil.copy2(lineFixed, copyToFolder)
-                    #else:
-                        #self.report({'INFO'}, "Texture does not exist!!")
-
-            #tex_file.close()
-        #else:
-            #self.report({'INFO'}, "Folder does not exist!!")
-
-        #return {'FINISHED'}
 
 
 class ClearExchangeFolder(bpy.types.Operator):

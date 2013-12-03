@@ -50,6 +50,15 @@ def register():
 
     class SimpleSceneCoat3D(bpy.types.PropertyGroup):
 
+        exportModelType = EnumProperty(
+            name = "Export Type",
+            items = (('OBJ', 'OBJ', ''),
+                   ('FBX', 'FBX', ''),
+                   ('DAE', 'DAE', ''),
+                   ),
+            default = 'OBJ'
+        )
+
         doApplyModifiers = BoolProperty(
             name="Apply Modifiers",
             description="Apply Modifiers...",
