@@ -77,7 +77,7 @@ class UV_IC_Main(UV_IC_Panel, Panel):
         col = layout.column(align=True)
 
         row = layout.row(align=True)
-        row.operator("uv.change_index", text="Drop Active UV Back")
+        row.operator("uvUtil.change_index", text="Drop Active UV Back")
 
         row = layout.row(align=True)
         col = layout.column()
@@ -85,20 +85,20 @@ class UV_IC_Main(UV_IC_Panel, Panel):
 
         row = layout.row(align=True)
         col = layout.column()
-        col.operator("uv.select_index", text="Select UVTexCoord")
+        col.operator("uvUtil.select_index", text="Select UVTexCoord")
         col.prop(scene, "UVTexIndex", text="UVTexCoord")
         row = layout.row(align=True)
         row = layout.row(align=True)
         col = layout.column()
-        col.operator("uv.select_name", text="Select UV Name")
+        col.operator("uvUtil.select_name", text="Select UV Name")
         col.prop(scene, "UVTexGetName", text="")
         row = layout.row(align=True)
         col = layout.column()
-        col.operator("uv.remove_active", text="Remove Active UV")
+        col.operator("uvUtil.remove_active", text="Remove Active UV")
 
 
 class UV_IC_ChangeIndex(UV_IC_Panel, Operator):
-    bl_idname = "uv.change_index"
+    bl_idname = "uvUtil.change_index"
     bl_label = "Change Index"
 
     def execute(self, context):
@@ -127,7 +127,7 @@ class UV_IC_ChangeIndex(UV_IC_Panel, Operator):
 
 
 class UV_IC_SelectIndex(UV_IC_Panel, Operator):
-    bl_idname = "uv.select_index"
+    bl_idname = "uvUtil.select_index"
     bl_label = "Select Index"
 
     def execute(self, context):
@@ -148,7 +148,7 @@ class UV_IC_SelectIndex(UV_IC_Panel, Operator):
 
 
 class UV_IC_SelectName(UV_IC_Panel, Operator):
-    bl_idname = "uv.select_name"
+    bl_idname = "uvUtil.select_name"
     bl_label = "Select Name"
 
     def execute(self, context):
@@ -172,7 +172,7 @@ class UV_IC_SelectName(UV_IC_Panel, Operator):
 
 
 class UV_IC_RemoveActiveUV(UV_IC_Panel, Operator):
-    bl_idname = "uv.remove_active"
+    bl_idname = "uvUtil.remove_active"
     bl_label = "Remove Active UV"
 
     def execute(self, context):
