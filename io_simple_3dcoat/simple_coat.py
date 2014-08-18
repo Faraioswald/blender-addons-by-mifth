@@ -232,7 +232,7 @@ class ClearExchangeFolder(bpy.types.Operator):
 
         return {'FINISHED'}
 
-    
+
 def register():
     bpy.utils.register_module(__name__)
 
