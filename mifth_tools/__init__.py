@@ -44,50 +44,73 @@ def register():
 
     class MFTProperties(bpy.types.PropertyGroup):
 
-        exportModelType = EnumProperty(
-            name = "Export Type",
-            items = (('OBJ', 'OBJ', ''),
-                   ('FBX', 'FBX', ''),
-                   ('DAE', 'DAE', ''),
+        radialClonesNumber = IntProperty(
+            default = 8,
+            min = 2,
+            max = 300
+        )
+
+        radialClonesAxis = EnumProperty(
+            items = (('X', 'X', ''),
+                   ('Y', 'Y', ''),
+                   ('Z', 'Z', ''),
                    ),
-            default = 'OBJ'
+            default = 'Z'
         )
 
-        doApplyModifiers = BoolProperty(
-            name="Apply Modifiers",
-            description="Apply Modifiers...",
-            default=True
+        outputFolder = StringProperty(
+            name="outputFolder",
+            subtype="NONE",
+            default="seq",
         )
 
-        exportMaterials = BoolProperty(
-            name="Export Materials",
-            description="Export Materials...",
-            default=True
+        outputSubFolder = StringProperty(
+            name="outputSubFolder",
+            subtype="NONE",
+            default="ren",
         )
 
-        copyTexturesPath = StringProperty(
-            name="Copy Textures Path",
-            subtype="DIR_PATH",
-            default="",
+        outputSequence = StringProperty(
+            name="outputSequence",
+            subtype="NONE",
+            default="render",
         )
 
-        type = EnumProperty(name="Export Type",
-                            description="Different Export Types",
-                            items=(("ppp", "Per-Pixel Painting", ""),
-                           ("mv", "Microvertex Painting", ""),
-                                ("ptex", "Ptex Painting", ""),
-                                ("uv", "UV-Mapping", ""),
-                                ("ref", "Reference Mesh", ""),
-                                ("retopo", "Retopo mesh as new layer", ""),
-                                ("vox", "Mesh As Voxel Object", ""),
-                                ("voxcombine", "Mesh As single Voxel Object", ""),
-                                ("alpha", "Mesh As New Pen Alpha", ""),
-                                ("prim", "Mesh As Voxel Primitive", ""),
-                                ("curv", "Mesh As a Curve Profile", ""),
-                                ("autopo", "Mesh For Auto-retopology", ""),
-                            ),
-                            default= "ppp"
-                            )
+        outputSequenceSize = IntProperty(
+            default = 8,
+            min = 1,
+            max = 60
+        )
+
+        doOutputSubFolder = BoolProperty(
+            name="do Output SubFolder",
+            description="do Output SubFolder...",
+            default=False
+        )
+
+        #exportMaterials = BoolProperty(
+            #name="Export Materials",
+            #description="Export Materials...",
+            #default=True
+        #)
+
+        #type = EnumProperty(name="Export Type",
+                            #description="Different Export Types",
+                            #items=(("ppp", "Per-Pixel Painting", ""),
+                           #("mv", "Microvertex Painting", ""),
+                                #("ptex", "Ptex Painting", ""),
+                                #("uv", "UV-Mapping", ""),
+                                #("ref", "Reference Mesh", ""),
+                                #("retopo", "Retopo mesh as new layer", ""),
+                                #("vox", "Mesh As Voxel Object", ""),
+                                #("voxcombine", "Mesh As single Voxel Object", ""),
+                                #("alpha", "Mesh As New Pen Alpha", ""),
+                                #("prim", "Mesh As Voxel Primitive", ""),
+                                #("curv", "Mesh As a Curve Profile", ""),
+                                #("autopo", "Mesh For Auto-retopology", ""),
+                            #),
+                            #default= "ppp"
+                            #)
 
     bpy.utils.register_module(__name__)
 
