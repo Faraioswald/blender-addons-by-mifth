@@ -51,9 +51,10 @@ class MFTPanelBase(bpy.types.Panel):
 
         layout.separator()
         layout.operator("mft.radialclone", text="Radial Clone")
-        #row = layout.row()
-        layout.prop(mifthTools, "radialClonesNumber")
-        layout.prop(mifthTools, "radialClonesAxis")
+        row = layout.row()
+        row.prop(mifthTools, "radialClonesNumber", text='')
+        row.prop(mifthTools, "radialClonesAxis", text='')
+        #row.prop(mifthTools, "radialClonesAxisType", text='')
 
 
 class MFTPanelPlaykot(bpy.types.Panel):
@@ -80,6 +81,7 @@ class MFTPanelPlaykot(bpy.types.Panel):
         row.prop(mifthTools, "doOutputSubFolder", text='')
         layout.prop(mifthTools, "outputSequence")
         layout.prop(mifthTools, "outputSequenceSize")
+
 
 class MFTCloneToSelected(bpy.types.Operator):
     bl_idname = "mft.clonetoselected"
@@ -129,26 +131,33 @@ class MFTRadialClone(bpy.types.Operator):
     def invoke(self, context, event):
 
         if len(bpy.context.selected_objects) > 0:
+            activeObj = bpy.context.scene.objects.active
             selObjects = bpy.context.selected_objects
             mifthTools = bpy.context.scene.mifthTools
             clonez = mifthTools.radialClonesNumber
 
             for i in range(clonez - 1):
                 newObj = bpy.ops.object.duplicate(linked=True, mode='DUMMY')
-                for obj in bpy.context.selected_objects:
-                    axis = 0
-                    if mifthTools.radialClonesAxis == 'Y':
-                        axis = 1
-                    elif mifthTools.radialClonesAxis == 'Z':
-                        axis = 2
-                    
-                    obj.rotation_euler[axis] += (math.radians(360)/float(clonez))
+                #for obj in bpy.context.selected_objects:
+                theAxis = (1, 0, 0)
+                #theAxesGet = 0
+                if mifthTools.radialClonesAxis == 'Y':
+                    theAxis = (0, 1, 0)
+                    #theAxesGet = 1
+                elif mifthTools.radialClonesAxis == 'Z':
+                    theAxis = (0, 0, 1)
+                    #theAxesGet = 2
+                
+                rotateValue = (math.radians(360)/float(clonez))
+                bpy.ops.transform.rotate(value=rotateValue, axis=theAxis)
+
 
             bpy.ops.object.select_all(action='DESELECT')
 
             for obj in selObjects:
                 obj.select = True
             selObjects = None
+            bpy.context.scene.objects.active = activeObj
         else:
             self.report({'INFO'}, "Select Objects!")
 

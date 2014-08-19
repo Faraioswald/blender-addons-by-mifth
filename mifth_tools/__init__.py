@@ -58,6 +58,14 @@ def register():
             default = 'Z'
         )
 
+        #radialClonesAxisType = EnumProperty(
+            #items = (('GLOBAL', 'GLOBAL', ''),
+                   #('LOCAL', 'LOCAL', ''),
+                   #('VIEW', 'VIEW', ''),
+                   #),
+            #default = 'GLOBAL'
+        #)
+
         outputFolder = StringProperty(
             name="outputFolder",
             subtype="NONE",
