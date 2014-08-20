@@ -51,10 +51,10 @@ class MFTPanelBase(bpy.types.Panel):
 
         layout.separator()
         layout.operator("mft.radialclone", text="Radial Clone")
+        layout.prop(mifthTools, "radialClonesNumber", text='')
         row = layout.row()
-        row.prop(mifthTools, "radialClonesNumber", text='')
         row.prop(mifthTools, "radialClonesAxis", text='')
-        #row.prop(mifthTools, "radialClonesAxisType", text='')
+        row.prop(mifthTools, "radialClonesAxisType", text='')
 
 
 class MFTPanelPlaykot(bpy.types.Panel):
@@ -136,17 +136,32 @@ class MFTRadialClone(bpy.types.Operator):
             mifthTools = bpy.context.scene.mifthTools
             clonez = mifthTools.radialClonesNumber
 
+            activeObjMatrix = activeObj.matrix_world
+
             for i in range(clonez - 1):
-                newObj = bpy.ops.object.duplicate(linked=True, mode='DUMMY')
+                bpy.ops.object.duplicate(linked=True, mode='DUMMY')
+                #newObj = bpy.context.selected_objects[0]
+                #print(newObj)
                 #for obj in bpy.context.selected_objects:
-                theAxis = (1, 0, 0)
-                #theAxesGet = 0
-                if mifthTools.radialClonesAxis == 'Y':
-                    theAxis = (0, 1, 0)
-                    #theAxesGet = 1
+                theAxis = None
+
+                if mifthTools.radialClonesAxis == 'X':
+                    if mifthTools.radialClonesAxisType == 'Local':
+                        theAxis = (activeObjMatrix[0][0], activeObjMatrix[1][0], activeObjMatrix[2][0])
+                    else:
+                        theAxis = (1, 0, 0)
+
+                elif mifthTools.radialClonesAxis == 'Y':
+                    if mifthTools.radialClonesAxisType == 'Local':
+                        theAxis = (activeObjMatrix[0][1], activeObjMatrix[1][1], activeObjMatrix[2][1])
+                    else:
+                        theAxis = (0, 1, 0)
+
                 elif mifthTools.radialClonesAxis == 'Z':
-                    theAxis = (0, 0, 1)
-                    #theAxesGet = 2
+                    if mifthTools.radialClonesAxisType == 'Local':
+                        theAxis = (activeObjMatrix[0][2], activeObjMatrix[1][2], activeObjMatrix[2][2])
+                    else:
+                        theAxis = (0, 0, 1)
                 
                 rotateValue = (math.radians(360)/float(clonez))
                 bpy.ops.transform.rotate(value=rotateValue, axis=theAxis)
