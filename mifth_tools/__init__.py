@@ -53,35 +53,34 @@ def register():
         radialClonesAxis = EnumProperty(
             items = (('X', 'X', ''),
                    ('Y', 'Y', ''),
-                   ('Z', 'Z', ''),
+                   ('Z', 'Z', '')
                    ),
             default = 'Z'
         )
 
-        #radialClonesAxisType = EnumProperty(
-            #items = (('GLOBAL', 'GLOBAL', ''),
-                   #('LOCAL', 'LOCAL', ''),
-                   #('VIEW', 'VIEW', ''),
-                   #),
-            #default = 'GLOBAL'
-        #)
+        radialClonesAxisType = EnumProperty(
+            items = (('Global', 'Global', ''),
+                   ('Local', 'Local', '')
+                   ),
+            default = 'Global'
+        )
 
         outputFolder = StringProperty(
             name="outputFolder",
             subtype="NONE",
-            default="seq",
+            default="seq"
         )
 
         outputSubFolder = StringProperty(
             name="outputSubFolder",
             subtype="NONE",
-            default="ren",
+            default="ren"
         )
 
         outputSequence = StringProperty(
             name="outputSequence",
             subtype="NONE",
-            default="render",
+            default="render"
         )
 
         outputSequenceSize = IntProperty(
