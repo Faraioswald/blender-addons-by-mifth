@@ -49,10 +49,11 @@ class MFTPanelCloning(bpy.types.Panel):
 
         layout.separator()
         layout.operator("mft.radialclone", text="Radial Clone")
-        layout.prop(mifthTools, "radialClonesNumber", text='')
+        #layout.prop(mifthTools, "radialClonesNumber", text='')
         row = layout.row()
         row.prop(mifthTools, "radialClonesAxis", text='')
         row.prop(mifthTools, "radialClonesAxisType", text='')
+        #row.prop(mifthTools, "radialClonesAngle", text='')
 
 
 class MFTPanelCurves(bpy.types.Panel):
@@ -108,7 +109,7 @@ class MFTCloneToSelected(bpy.types.Operator):
     bl_description = "Clone To Selected"
     bl_options = {'REGISTER', 'UNDO'}
 
-    def invoke(self, context, event):
+    def execute(self, context):
 
         if len(bpy.context.selected_objects) > 1:
             objToClone = bpy.context.scene.objects.active
@@ -147,17 +148,28 @@ class MFTRadialClone(bpy.types.Operator):
     bl_description = "Radial Clone"
     bl_options = {'REGISTER', 'UNDO'}
 
-    def invoke(self, context, event):
+    radialClonesAngle = FloatProperty(
+        default = 360.0,
+        min = -360.0,
+        max = 360.0
+    )
+    clonez = IntProperty(
+            default = 8,
+            min = 2,
+            max = 300
+        )
+
+    def execute(self, context):
 
         if len(bpy.context.selected_objects) > 0:
             activeObj = bpy.context.scene.objects.active
             selObjects = bpy.context.selected_objects
             mifthTools = bpy.context.scene.mifthTools
-            clonez = mifthTools.radialClonesNumber
+            #self.clonez = mifthTools.radialClonesNumber
 
             activeObjMatrix = activeObj.matrix_world
 
-            for i in range(clonez - 1):
+            for i in range(self.clonez - 1):
                 bpy.ops.object.duplicate(linked=True, mode='DUMMY')
                 #newObj = bpy.context.selected_objects[0]
                 #print(newObj)
@@ -182,7 +194,7 @@ class MFTRadialClone(bpy.types.Operator):
                     else:
                         theAxis = (0, 0, 1)
                 
-                rotateValue = (math.radians(360)/float(clonez))
+                rotateValue = (math.radians(self.radialClonesAngle)/float(self.clonez))
                 bpy.ops.transform.rotate(value=rotateValue, axis=theAxis)
 
 
@@ -204,7 +216,7 @@ class MFTCropNodeRegion(bpy.types.Operator):
     bl_description = "Crop Node Region"
     bl_options = {'REGISTER', 'UNDO'}
 
-    def invoke(self, context, event):
+    def execute(self, context):
 
         scene = bpy.context.scene
         nodes = scene.node_tree.nodes
@@ -227,7 +239,7 @@ class MFTOutputCreator(bpy.types.Operator):
     bl_description = "Output Creator"
     bl_options = {'REGISTER', 'UNDO'}
 
-    def invoke(self, context, event):
+    def execute(self, context):
 
         scene = bpy.context.scene
         nodes = scene.node_tree.nodes
@@ -258,7 +270,7 @@ class MFTCurveAnimator(bpy.types.Operator):
     bl_description = "Curve Animator"
     bl_options = {'REGISTER', 'UNDO'}
 
-    def invoke(self, context, event):
+    def execute(self, context):
 
         mifthTools = bpy.context.scene.mifthTools
 

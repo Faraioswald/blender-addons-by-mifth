@@ -45,11 +45,11 @@ def register():
     class MFTProperties(bpy.types.PropertyGroup):
 
         # Radial Clone Settings
-        radialClonesNumber = IntProperty(
-            default = 8,
-            min = 2,
-            max = 300
-        )
+        #radialClonesNumber = IntProperty(
+            #default = 8,
+            #min = 2,
+            #max = 300
+        #)
 
         radialClonesAxis = EnumProperty(
             items = (('X', 'X', ''),
