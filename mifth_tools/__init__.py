@@ -44,6 +44,7 @@ def register():
 
     class MFTProperties(bpy.types.PropertyGroup):
 
+        # Radial Clone Settings
         radialClonesNumber = IntProperty(
             default = 8,
             min = 2,
@@ -65,6 +66,7 @@ def register():
             default = 'Global'
         )
 
+        # Output Settings
         outputFolder = StringProperty(
             name="outputFolder",
             subtype="NONE",
@@ -95,29 +97,37 @@ def register():
             default=False
         )
 
-        #exportMaterials = BoolProperty(
-            #name="Export Materials",
-            #description="Export Materials...",
-            #default=True
-        #)
+        # Curve Animator Settings
+        doUseSceneFrames = BoolProperty(
+            name="do use scene frames",
+            description="do use scene frames...",
+            default=False
+        )
 
-        #type = EnumProperty(name="Export Type",
-                            #description="Different Export Types",
-                            #items=(("ppp", "Per-Pixel Painting", ""),
-                           #("mv", "Microvertex Painting", ""),
-                                #("ptex", "Ptex Painting", ""),
-                                #("uv", "UV-Mapping", ""),
-                                #("ref", "Reference Mesh", ""),
-                                #("retopo", "Retopo mesh as new layer", ""),
-                                #("vox", "Mesh As Voxel Object", ""),
-                                #("voxcombine", "Mesh As single Voxel Object", ""),
-                                #("alpha", "Mesh As New Pen Alpha", ""),
-                                #("prim", "Mesh As Voxel Primitive", ""),
-                                #("curv", "Mesh As a Curve Profile", ""),
-                                #("autopo", "Mesh For Auto-retopology", ""),
-                            #),
-                            #default= "ppp"
-                            #)
+        curveAniStartFrame = IntProperty(
+            default = 1,
+            min = 1,
+            max = 10000
+        )
+
+        curveAniEndFrame = IntProperty(
+            default = 100,
+            min = 1,
+            max = 10000
+        )
+
+        curveAniStepFrame = IntProperty(
+            default = 10,
+            min = 1,
+            max = 10000
+        )
+
+        curveAniInterpolation = FloatProperty(
+            default = 0.3,
+            min = 0.0,
+            max = 1.0
+        )
+
 
     bpy.utils.register_module(__name__)
 
