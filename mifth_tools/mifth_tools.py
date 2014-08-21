@@ -263,11 +263,11 @@ class MFTCurveAnimator(bpy.types.Operator):
         mifthTools = bpy.context.scene.mifthTools
 
         startFrame = bpy.context.scene.frame_start
-        if mifthTools.doUseSceneFrames is True:
+        if mifthTools.doUseSceneFrames is False:
             startFrame = mifthTools.curveAniStartFrame
 
         endFrame = bpy.context.scene.frame_end
-        if mifthTools.doUseSceneFrames is True:
+        if mifthTools.doUseSceneFrames is False:
             endFrame = mifthTools.curveAniEndFrame
 
         totalFrames = endFrame - startFrame
