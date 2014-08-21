@@ -26,8 +26,8 @@ import math
 bpy.mifthTools = dict()
 
 
-class MFTPanelBase(bpy.types.Panel):
-    bl_label = "Base"
+class MFTPanelCloning(bpy.types.Panel):
+    bl_label = "Cloning"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = "objectmode"
@@ -36,8 +36,6 @@ class MFTPanelBase(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        scene = context.scene
-        allObjects = context.scene.objects
         mifthTools = bpy.context.scene.mifthTools
 
         # GUI
@@ -57,6 +55,29 @@ class MFTPanelBase(bpy.types.Panel):
         row.prop(mifthTools, "radialClonesAxisType", text='')
 
 
+class MFTPanelCurves(bpy.types.Panel):
+    bl_label = "Curves"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'TOOLS'
+    bl_context = "objectmode"
+    bl_category = 'Mifth'
+    #bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        mifthTools = bpy.context.scene.mifthTools
+
+        layout.operator("mft.curveanimator", text="Curve Animator")
+        layout.prop(mifthTools, "doUseSceneFrames", text='UseSceneFrames')
+        row = layout.row()
+        row.prop(mifthTools, "curveAniStartFrame", text='Start')
+        row.prop(mifthTools, "curveAniEndFrame", text='End')
+        row = layout.row()
+        row.prop(mifthTools, "curveAniStepFrame", text='Steps')
+        row.prop(mifthTools, "curveAniInterpolation", text='Interpolation')
+        
+
+
 class MFTPanelPlaykot(bpy.types.Panel):
     bl_label = "PlaykotTools"
     bl_space_type = 'VIEW_3D'
@@ -67,8 +88,6 @@ class MFTPanelPlaykot(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        scene = context.scene
-        allObjects = context.scene.objects
         mifthTools = bpy.context.scene.mifthTools
 
         layout.operator("mft.cropnoderegion", text="CropNodeRegion")
@@ -229,6 +248,72 @@ class MFTOutputCreator(bpy.types.Operator):
             outFile += mifthTools.outputSequence + "_" + idx + "_"
 
             output_file.file_slots.new(outFile)
+
+        return {'FINISHED'}
+
+
+class MFTCurveAnimator(bpy.types.Operator):
+    bl_idname = "mft.curveanimator"
+    bl_label = "Curve Animator"
+    bl_description = "Curve Animator"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def invoke(self, context, event):
+
+        mifthTools = bpy.context.scene.mifthTools
+
+        startFrame = bpy.context.scene.frame_start
+        if mifthTools.doUseSceneFrames is True:
+            startFrame = mifthTools.curveAniStartFrame
+
+        endFrame = bpy.context.scene.frame_end
+        if mifthTools.doUseSceneFrames is True:
+            endFrame = mifthTools.curveAniEndFrame
+
+        totalFrames = endFrame - startFrame
+        frameSteps = mifthTools.curveAniStepFrame - 1
+
+        for curve in bpy.context.selected_objects:
+            if curve.type == 'CURVE':
+
+                for frStep in range(frameSteps + 1):
+                    aniPos = 1.0 - (float(frStep)/float(frameSteps))
+                    goToFrame = int(aniPos * float(totalFrames))
+                    goToFrame += startFrame
+                    bpy.context.scene.frame_current = goToFrame
+                    print(goToFrame)
+
+                    for spline in curve.data.splines:
+                        #print(spline.points)
+                        # if len(spline.bezier_points) >= 2:
+                        spline.use_bezier_u = False
+                        spline.use_endpoint_u = True
+                        #spline.use_cyclic_u = False
+
+                        aniInterpolation = mifthTools.curveAniInterpolation
+
+                        allPoints = None
+                        if spline.type == 'BEZIER':
+                            allPoints = spline.bezier_points
+                        else:
+                            allPoints = spline.points
+
+                        splineSize = len(allPoints)
+                        iInterpolation = aniPos-aniInterpolation
+
+                        for i in range(splineSize):
+                            point = allPoints[i]
+                            iPlace = float(i+1)/float(splineSize)
+
+                            if iPlace >= aniPos and goToFrame != endFrame:
+                                point.radius = 0.0
+
+                            elif iPlace < aniPos and iPlace > iInterpolation and goToFrame != endFrame and goToFrame != startFrame:
+                                additionalInterpolation = 1.0 - ((iPlace - iInterpolation)/aniInterpolation)
+                                point.radius *= additionalInterpolation
+                                #print(additionalInterpolation)
+
+                            point.keyframe_insert(data_path="radius", frame=goToFrame)
 
         return {'FINISHED'}
 
