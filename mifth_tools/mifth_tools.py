@@ -222,11 +222,21 @@ class MFTCropNodeRegion(bpy.types.Operator):
         nodes = scene.node_tree.nodes
         cropNode = nodes.active
 
-        if cropNode != None and cropNode.type == 'CROP':
-            nodes.active.min_x = scene.render.border_min_x * scene.render.resolution_x
-            nodes.active.max_x = scene.render.border_max_x * scene.render.resolution_x
-            nodes.active.min_y = scene.render.border_max_y * scene.render.resolution_y
-            nodes.active.max_y = scene.render.border_min_y * scene.render.resolution_y
+        if cropNode != None:
+            if cropNode.type == 'CROP':
+                cropNode.min_x = scene.render.border_min_x * scene.render.resolution_x
+                cropNode.max_x = scene.render.border_max_x * scene.render.resolution_x
+                cropNode.min_y = scene.render.border_max_y * scene.render.resolution_y
+                cropNode.max_y = scene.render.border_min_y * scene.render.resolution_y
+
+            elif cropNode.type == 'GROUP':
+                cropGroupNode = cropNode.node_tree.nodes.active
+
+                if cropGroupNode != None and cropGroupNode.type == 'CROP':
+                    cropGroupNode.min_x = scene.render.border_min_x * scene.render.resolution_x
+                    cropGroupNode.max_x = scene.render.border_max_x * scene.render.resolution_x
+                    cropGroupNode.min_y = scene.render.border_max_y * scene.render.resolution_y
+                    cropGroupNode.max_y = scene.render.border_min_y * scene.render.resolution_y
         else:
             self.report({'INFO'}, "Select Crop Node!")
 
