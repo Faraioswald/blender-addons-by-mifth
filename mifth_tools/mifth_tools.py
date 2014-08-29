@@ -225,8 +225,8 @@ class MFTCropNodeRegion(bpy.types.Operator):
         if cropNode != None and cropNode.type == 'CROP':
             nodes.active.min_x = scene.render.border_min_x * scene.render.resolution_x
             nodes.active.max_x = scene.render.border_max_x * scene.render.resolution_x
-            nodes.active.min_y = scene.render.border_min_y * scene.render.resolution_y
-            nodes.active.max_y = scene.render.border_max_y * scene.render.resolution_y
+            nodes.active.min_y = scene.render.border_max_y * scene.render.resolution_y
+            nodes.active.max_y = scene.render.border_min_y * scene.render.resolution_y
         else:
             self.report({'INFO'}, "Select Crop Node!")
 
