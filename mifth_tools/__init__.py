@@ -129,6 +129,13 @@ def register():
         )
 
 
+        # MorfCreator settings
+        morfCreatorNames = StringProperty(
+            name="MorfNames",
+            subtype="NONE",
+            default=""
+        )
+
     bpy.utils.register_module(__name__)
 
     bpy.types.Scene.mifthTools = PointerProperty(

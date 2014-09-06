@@ -56,8 +56,8 @@ class MFTPanelCloning(bpy.types.Panel):
         #row.prop(mifthTools, "radialClonesAngle", text='')
 
 
-class MFTPanelCurves(bpy.types.Panel):
-    bl_label = "Curves"
+class MFTPanelAnimation(bpy.types.Panel):
+    bl_label = "Animations"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = "objectmode"
@@ -76,12 +76,16 @@ class MFTPanelCurves(bpy.types.Panel):
         row = layout.row()
         row.prop(mifthTools, "curveAniStepFrame", text='Steps')
         row.prop(mifthTools, "curveAniInterpolation", text='Interpolation')
-        
+
+        layout.separator()
+        layout.separator()
+        layout.operator("mft.morfcreator", text="Morf Creator")
+        layout.prop(mifthTools, "morfCreatorNames")
 
 
 class MFTPanelPlaykot(bpy.types.Panel):
     bl_label = "PlaykotTools"
-    bl_space_type = 'VIEW_3D'
+    bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'TOOLS'
     bl_context = "objectmode"
     bl_category = 'Mifth'
@@ -336,6 +340,46 @@ class MFTCurveAnimator(bpy.types.Operator):
                                 #print(additionalInterpolation)
 
                             point.keyframe_insert(data_path="radius", frame=goToFrame)
+
+        return {'FINISHED'}
+
+
+class MFTMorfCreator(bpy.types.Operator):
+    bl_idname = "mft.morfcreator"
+    bl_label = "Morfing Creator"
+    bl_description = "Morfing Creator from different objects"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+
+        scene = bpy.context.scene
+        mifthTools = scene.mifthTools
+
+        if len(bpy.context.selected_objects) > 1:
+            objAct = scene.objects.active
+            morfIndex = 1
+
+            #print(objAct.data.shape_keys)
+            if objAct.data.shape_keys is None:
+                basisKey = objAct.shape_key_add(from_mix=False)
+                basisKey.name = 'Basis'
+
+            for obj in bpy.context.selected_objects:
+                if obj != objAct:
+                    if len(obj.data.vertices) == len(objAct.data.vertices):
+                        shapeKey = objAct.shape_key_add(from_mix=False)
+
+                        if mifthTools.morfCreatorNames != '':
+                            shapeKey.name = mifthTools.morfCreatorNames + "_" + str(morfIndex)
+                            morfIndex += 1
+                        else:
+                            shapeKey.name = obj.name
+
+                        for vert in obj.data.vertices:
+                            shapeKey.data[vert.index].co = vert.co
+                            #print(vert.co)  # this is a vertex coord of the mesh
+                    else:
+                        self.report({'INFO'}, "Model " + obj.name + " has different points count")
 
         return {'FINISHED'}
 
