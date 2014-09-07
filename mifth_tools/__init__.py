@@ -136,6 +136,13 @@ def register():
             default=""
         )
 
+        morfUseWorldMatrix = BoolProperty(
+            name="use world matrix",
+            description="use world matrix...",
+            default=False
+        )
+
+
     bpy.utils.register_module(__name__)
 
     bpy.types.Scene.mifthTools = PointerProperty(
