@@ -82,6 +82,7 @@ class MFTPanelAnimation(bpy.types.Panel):
         layout.operator("mft.morfcreator", text="Morf Creator")
         layout.prop(mifthTools, "morfCreatorNames")
         layout.prop(mifthTools, "morfUseWorldMatrix", text='useWorldMatrix')
+        layout.prop(mifthTools, "morfApplyModifiers", text='applyModifiers')
 
 
 class MFTPanelPlaykot(bpy.types.Panel):
@@ -371,12 +372,20 @@ class MFTMorfCreator(bpy.types.Operator):
                         shapeKey = objAct.shape_key_add(from_mix=False)
 
                         if mifthTools.morfCreatorNames != '':
-                            shapeKey.name = mifthTools.morfCreatorNames + "_" + str(morfIndex)
+                            shapeKey.name = mifthTools.morfCreatorNames
+
+                            if len(bpy.context.selected_objects) > 2:
+                                shapeKey.name += "_" + str(morfIndex)
+
                             morfIndex += 1
                         else:
                             shapeKey.name = obj.name
 
-                        for vert in obj.data.vertices:
+                        modifiedMesh = obj.data
+                        if mifthTools.morfApplyModifiers is True:
+                            modifiedMesh = obj.to_mesh(scene = bpy.context.scene, apply_modifiers = True, settings = 'PREVIEW')
+
+                        for vert in modifiedMesh.vertices:
                             if mifthTools.morfUseWorldMatrix:
                                 shapeKey.data[vert.index].co = obj.matrix_world * vert.co
                             else:
