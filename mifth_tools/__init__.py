@@ -142,6 +142,11 @@ def register():
             default=False
         )
 
+        morfApplyModifiers = BoolProperty(
+            name="apply modifiers to morf",
+            description="apply modifiers to morf...",
+            default=False
+        )
 
     bpy.utils.register_module(__name__)
 
