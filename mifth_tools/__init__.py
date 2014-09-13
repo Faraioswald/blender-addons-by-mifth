@@ -42,8 +42,10 @@ from bpy.props import *
 def getGroups(scene, context):
 
     lst = []
+    obj = context.scene.objects.active
     for group in bpy.data.groups:
-        lst.append((group.name, group.name,""))
+        if obj is not None and obj.name in group.objects:
+            lst.append((group.name, group.name,""))
 
     return lst
 
