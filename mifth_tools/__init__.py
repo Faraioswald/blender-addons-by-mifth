@@ -39,6 +39,15 @@ import bpy
 from bpy.props import *
 
 
+def getGroups(scene, context):
+
+    lst = []
+    for group in bpy.data.groups:
+        lst.append((group.name, group.name,""))
+
+    return lst
+
+
 def register():
     bpy.mifthTools = dict()
 
@@ -128,7 +137,6 @@ def register():
             max = 1.0
         )
 
-
         # MorfCreator settings
         morfCreatorNames = StringProperty(
             name="MorfNames",
@@ -147,6 +155,12 @@ def register():
             description="apply modifiers to morf...",
             default=False
         )
+
+        # GroupInstance to Cursor
+        getGroupsLst = EnumProperty(name='Get Groups',
+                                description='Get Groups.',
+                                items=getGroups)
+
 
     bpy.utils.register_module(__name__)
 

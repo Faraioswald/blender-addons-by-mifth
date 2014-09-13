@@ -48,12 +48,18 @@ class MFTPanelCloning(bpy.types.Panel):
         layout.operator("mft.clonetoselected", text="CloneToSelected")
 
         layout.separator()
+        layout.separator()
         layout.operator("mft.radialclone", text="Radial Clone")
         #layout.prop(mifthTools, "radialClonesNumber", text='')
         row = layout.row()
         row.prop(mifthTools, "radialClonesAxis", text='')
         row.prop(mifthTools, "radialClonesAxisType", text='')
         #row.prop(mifthTools, "radialClonesAngle", text='')
+
+        layout.separator()
+        layout.separator()
+        layout.operator("mft.group_instance_to_cursor", text="Position Group")
+        layout.prop(mifthTools, "getGroupsLst", text='')
 
 
 class MFTPanelAnimation(bpy.types.Panel):
@@ -79,7 +85,7 @@ class MFTPanelAnimation(bpy.types.Panel):
 
         layout.separator()
         layout.separator()
-        layout.operator("mft.morfcreator", text="Morf Creator")
+        layout.operator("mft.morfcreator", text="Morfer")
         layout.prop(mifthTools, "morfCreatorNames")
         layout.prop(mifthTools, "morfUseWorldMatrix", text='useWorldMatrix')
         layout.prop(mifthTools, "morfApplyModifiers", text='applyModifiers')
@@ -393,6 +399,27 @@ class MFTMorfCreator(bpy.types.Operator):
                             #print(vert.co)  # this is a vertex coord of the mesh
                     else:
                         self.report({'INFO'}, "Model " + obj.name + " has different points count")
+
+        return {'FINISHED'}
+
+
+class MFTGroupInstance(bpy.types.Operator):
+    bl_idname = "mft.group_instance_to_cursor"
+    bl_label = "Set GroupInstance to Cursor"
+    bl_description = "Set GroupInstance to Cursor..."
+    bl_options = {'REGISTER', 'UNDO'}
+
+
+    def execute(self, context):
+        scene = bpy.context.scene
+        mifthTools = scene.mifthTools
+
+        obj_group = bpy.data.groups.get(mifthTools.getGroupsLst)
+        if obj_group is not None:
+            obj_group.dupli_offset[0] = bpy.context.space_data.cursor_location[0]
+            obj_group.dupli_offset[1] = bpy.context.space_data.cursor_location[1]
+            obj_group.dupli_offset[2] = bpy.context.space_data.cursor_location[2]
+
 
         return {'FINISHED'}
 
