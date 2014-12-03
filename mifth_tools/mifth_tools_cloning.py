@@ -22,6 +22,7 @@ from bpy_extras import view3d_utils
 
 import math
 import mathutils
+import random
 
 bpy.mifthTools = dict()
 
@@ -66,10 +67,10 @@ class MFTPickObjToDrawClone(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        mifthTools = bpy.context.scene.mifthTools
+        mifthTools = context.scene.mifthTools
 
-        if len(bpy.context.selected_objects) > 0:
-            mifthTools.drawForClonesObj = bpy.context.selected_objects[0].name
+        if len(context.selected_objects) > 0:
+            mifthTools.drawForClonesObj = context.selected_objects[0].name
 
         return {'FINISHED'}
 
@@ -188,15 +189,6 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
             if mifthTools.drawClonesNormalRotate is True:
                 # Other rotate
                 
-                #newDupXAxisTuple = (1.0, 0.0, 0.0)
-
-                #newDupYAxisTuple = (0.0, -1.0, 0.0)
-                #newDupZAxisTuple = (0.0, 0.0, 1.0)
-                #newDupYAxis = mathutils.Vector(newDupYAxisTuple).normalized()
-                #newDupYAxis.x = -newDupYAxis.x
-                #newDupYAxis.y = -newDupYAxis.y
-                #newDupYAxis.z = -newDupYAxis.z
-
                 xRotateAxis = xyNor.cross(best_obj_nor).normalized()
                 angleRotate = xyNor.angle(best_obj_nor)
                 
@@ -219,6 +211,18 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
                         #angleRotate = -angleRotate
 
                 bpy.ops.transform.rotate(value=angleRotate, axis=( (xRotateAxis.x, xRotateAxis.y, xRotateAxis.z) ))
+
+        if mifthTools.randNormalClone > 0.0:
+            randNorAngle = random.uniform(math.radians(-180.0), math.radians(180.0)) * mifthTools.randNormalClone
+            randNorAxis = (best_obj_nor.x, best_obj_nor.y, best_obj_nor.z)
+            if mifthTools.drawClonesRadialRotate is False and mifthTools.drawClonesNormalRotate is False:
+                randNorAxis = (0.0, 0.0, 1.0)
+            bpy.ops.transform.rotate(value=randNorAngle, axis=( randNorAxis ))
+
+        if mifthTools.randScaleClone > 0.0:
+            randScaleClone = 1.0 - (random.uniform(0.0, 0.99) * mifthTools.randScaleClone)
+            bpy.ops.transform.resize(value=(randScaleClone, randScaleClone, randScaleClone), constraint_axis=(False, False, False), constraint_orientation='GLOBAL')
+
         bpy.ops.object.select_all(action='DESELECT')
 
         for obj in selected_Obj_True:
