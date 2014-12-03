@@ -78,6 +78,29 @@ def register():
             default=True
         )
 
+        randNormalClone = FloatProperty(
+            default = 0.0,
+            min = 0.0,
+            max = 1.0
+        )
+
+        randScaleClone = FloatProperty(
+            default = 0.0,
+            min = 0.0,
+            max = 0.99
+        )
+
+        drawClonesAxis = EnumProperty(
+            items = (('X', 'X', ''),
+                   ('-X', '-X', ''),
+                   ('Y', 'Y', ''),
+                   ('-Y', '-Y', ''),
+                   ('Z', 'Z', ''),
+                   ('-Z', '-Z', '')
+                   ),
+            default = '-Y'
+        )
+
         # Radial Clone Settings
         radialClonesAxis = EnumProperty(
             items = (('X', 'X', ''),
