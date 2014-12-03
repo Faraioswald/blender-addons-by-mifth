@@ -22,6 +22,8 @@ from bpy.props import *
 from bpy.types import Operator, AddonPreferences
 
 import math
+#import mifth_tools_cloning
+
 
 bpy.mifthTools = dict()
 
@@ -38,12 +40,11 @@ class MFTPanelCloning(bpy.types.Panel):
         layout = self.layout
         mifthTools = bpy.context.scene.mifthTools
 
-        # GUI
-        #row = layout.row()
-        #row.label(text="Import/Export Objects")
-        #row = layout.row()
-        #row.prop(mifthTools, "type", text="")
-        #row = layout.row()
+        layout.operator("mft.draw_clones", text="DrawClones")
+        layout.operator("mft.pick_obj_to_clone_draw", text="PickObject")
+        layout.prop(mifthTools, "drawClonesRadialRotate", text='RadialRotate')
+        layout.prop(mifthTools, "drawClonesNormalRotate", text='NormalRotate')
+        layout.separator()
 
         layout.operator("mft.clonetoselected", text="CloneToSelected")
 
