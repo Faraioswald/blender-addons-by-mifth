@@ -31,9 +31,12 @@ bl_info = {
 
 if "bpy" in locals():
     import imp
+    imp.reload(mifth_tools_cloning)
     imp.reload(mifth_tools)
 else:
+    from . import mifth_tools_cloning
     from . import mifth_tools
+    
 
 import bpy
 from bpy.props import *
@@ -55,13 +58,27 @@ def register():
 
     class MFTProperties(bpy.types.PropertyGroup):
 
-        # Radial Clone Settings
-        #radialClonesNumber = IntProperty(
-            #default = 8,
-            #min = 2,
-            #max = 300
-        #)
 
+        # Draw Cloned Settings
+        drawForClonesObj = StringProperty(
+            name="drawForClonesObj",
+            subtype="NONE",
+            default=""
+        )
+
+        drawClonesRadialRotate = BoolProperty(
+            name="drawClonesRadialRotate",
+            description="drawClonesRadialRotate...",
+            default=True
+        )
+
+        drawClonesNormalRotate = BoolProperty(
+            name="drawClonesNormalRotate",
+            description="drawClonesNormalRotate...",
+            default=True
+        )
+
+        # Radial Clone Settings
         radialClonesAxis = EnumProperty(
             items = (('X', 'X', ''),
                    ('Y', 'Y', ''),
