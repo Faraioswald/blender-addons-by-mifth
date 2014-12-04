@@ -235,10 +235,13 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
             newDirRotAngle = newDirRotLookAtt.angle(newDupZAxis2)
             #if newDupXAxis2.angle(newDirRotLookAtt) > math.radians(90.0):
                 #newDirRotAngle = -newDirRotAngle
-            #print(newDirRotAngle)
+
+            newDirRotAngle = -newDirRotAngle # As we do it in negative axis
+
+            print(newDirRotLookAtt.angle(newDupZAxis2))
 
             # Main rotation
-            bpy.ops.transform.rotate(value= -newDirRotAngle, axis=( (newDirRotVec2.x, newDirRotVec2.y, newDirRotVec2.z) ))
+            bpy.ops.transform.rotate(value= newDirRotAngle, axis=( (newDirRotVec2.x, newDirRotVec2.y, newDirRotVec2.z) ))
 
             # Fix Rotation
             newDupMatrix2 = newDup.matrix_world  # Do it Again with new Rotation
@@ -248,10 +251,14 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
             newDupZAxis2.y = -newDupZAxis2.y
             newDupZAxis2.z = -newDupZAxis2.z
 
-
             fixDirRotAngle = newDupZAxis2.angle(best_obj_nor)
             fixDirRotAxis = (newDupZAxis2.cross(best_obj_nor) ).normalized()
+
             bpy.ops.transform.rotate(value= fixDirRotAngle, axis=( (fixDirRotAxis.x, fixDirRotAxis.y, fixDirRotAxis.z) ))
+
+            # temp fix
+            if newDirRotLookAtt.angle(newDupZAxis2) < math.radians(90.0) and newDirRotAngle < math.radians(-90.0):
+                bpy.ops.transform.rotate(value= math.radians(-45.0), axis=( (best_obj_nor.x, best_obj_nor.y, best_obj_nor.z) ))
 
         #print(prevClonePos)
         prevClonePos = best_obj_pos.copy()  # set PreviousClone position
