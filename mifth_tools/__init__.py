@@ -66,6 +66,12 @@ def register():
             default=""
         )
 
+        drawClonesDirectionRotate = BoolProperty(
+            name="drawClonesDirectionRotate",
+            description="drawClonesDirectionRotate...",
+            default=False
+        )
+
         drawClonesRadialRotate = BoolProperty(
             name="drawClonesRadialRotate",
             description="drawClonesRadialRotate...",

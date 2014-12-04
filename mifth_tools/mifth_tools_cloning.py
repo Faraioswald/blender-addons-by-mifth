@@ -26,6 +26,8 @@ import random
 
 bpy.mifthTools = dict()
 
+prevClonePos = None
+
 class MFTDrawClones(bpy.types.Operator):
     bl_idname = "mft.draw_clones"
     bl_label = "Draw Clones"
@@ -194,12 +196,12 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
                 
                 if mifthTools.drawClonesRadialRotate is False:
                     newDupMatrix = newDup.matrix_world
-                    activeObjMatrix = objToClone.matrix_world
+                    #activeObjMatrix = objToClone.matrix_world
 
-                    #newDupZAxisTuple = (activeObjMatrix[0][2], activeObjMatrix[1][2], activeObjMatrix[2][2])
+                    #newDupZAxisTuple = (newDupMatrix[0][2], newDupMatrix[1][2], newDupMatrix[2][2])
                     #newDupZAxis = mathutils.Vector(newDupZAxisTuple).normalized()
 
-                    newDupYAxisTuple = (activeObjMatrix[0][1], activeObjMatrix[1][1], activeObjMatrix[2][1])
+                    newDupYAxisTuple = (newDupMatrix[0][1], newDupMatrix[1][1], newDupMatrix[2][1])
                     newDupYAxis = mathutils.Vector(newDupYAxisTuple).normalized()
                     newDupYAxis.x = -newDupYAxis.x
                     newDupYAxis.y = -newDupYAxis.y
@@ -212,6 +214,48 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
 
                 bpy.ops.transform.rotate(value=angleRotate, axis=( (xRotateAxis.x, xRotateAxis.y, xRotateAxis.z) ))
 
+        global prevClonePos
+
+        if mifthTools.drawClonesDirectionRotate is True and prevClonePos is not None:
+            newDirRotLookAtt = (best_obj_pos - prevClonePos).normalized()
+
+            newDupMatrix2 = newDup.matrix_world
+            newDupZAxisTuple2 = (newDupMatrix2[0][2], newDupMatrix2[1][2], newDupMatrix2[2][2])
+            newDupZAxis2 = (mathutils.Vector(newDupZAxisTuple2)).normalized()
+
+            #newDupXAxisTuple2 = (newDupMatrix2[0][0], newDupMatrix2[1][0], newDupMatrix2[2][0])
+            #newDupZAxis2.x = -newDupZAxis2.x
+            #newDupZAxis2.y = -newDupZAxis2.y
+            #newDupZAxis2.z = -newDupZAxis2.z
+
+            #newDupXAxis2 = (mathutils.Vector(newDupXAxisTuple2)).normalized()
+
+            newDirRotVec2 = ( newDirRotLookAtt.cross(newDupZAxis2) ).normalized()
+
+            newDirRotAngle = newDirRotLookAtt.angle(newDupZAxis2)
+            #if newDupXAxis2.angle(newDirRotLookAtt) > math.radians(90.0):
+                #newDirRotAngle = -newDirRotAngle
+            #print(newDirRotAngle)
+
+            # Main rotation
+            bpy.ops.transform.rotate(value= -newDirRotAngle, axis=( (newDirRotVec2.x, newDirRotVec2.y, newDirRotVec2.z) ))
+
+            # Fix Rotation
+            newDupMatrix2 = newDup.matrix_world  # Do it Again with new Rotation
+            newDupZAxisTuple2 = (newDupMatrix2[0][1], newDupMatrix2[1][1], newDupMatrix2[2][1])
+            newDupZAxis2 = (mathutils.Vector(newDupZAxisTuple2)).normalized()
+            newDupZAxis2.x = -newDupZAxis2.x
+            newDupZAxis2.y = -newDupZAxis2.y
+            newDupZAxis2.z = -newDupZAxis2.z
+
+
+            fixDirRotAngle = newDupZAxis2.angle(best_obj_nor)
+            fixDirRotAxis = (newDupZAxis2.cross(best_obj_nor) ).normalized()
+            bpy.ops.transform.rotate(value= fixDirRotAngle, axis=( (fixDirRotAxis.x, fixDirRotAxis.y, fixDirRotAxis.z) ))
+
+        #print(prevClonePos)
+        prevClonePos = best_obj_pos.copy()  # set PreviousClone position
+            
         if mifthTools.randNormalClone > 0.0:
             randNorAngle = random.uniform(math.radians(-180.0), math.radians(180.0)) * mifthTools.randNormalClone
             randNorAxis = (best_obj_nor.x, best_obj_nor.y, best_obj_nor.z)
