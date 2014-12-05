@@ -196,21 +196,13 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
                 
                 if mifthTools.drawClonesRadialRotate is False:
                     newDupMatrix = newDup.matrix_world
-                    #activeObjMatrix = objToClone.matrix_world
-
-                    #newDupZAxisTuple = (newDupMatrix[0][2], newDupMatrix[1][2], newDupMatrix[2][2])
-                    #newDupZAxis = mathutils.Vector(newDupZAxisTuple).normalized()
 
                     newDupYAxisTuple = (newDupMatrix[0][1], newDupMatrix[1][1], newDupMatrix[2][1])
                     newDupYAxis = mathutils.Vector(newDupYAxisTuple).normalized()
-                    newDupYAxis.x = -newDupYAxis.x
-                    newDupYAxis.y = -newDupYAxis.y
-                    newDupYAxis.z = -newDupYAxis.z
+                    newDupYAxis.negate()
 
                     xRotateAxis = newDupYAxis.cross(best_obj_nor).normalized()
                     angleRotate = newDupYAxis.angle(best_obj_nor)
-                    #if newDupZAxis.angle(best_obj_nor) > math.radians(90.0):
-                        #angleRotate = -angleRotate
 
                 bpy.ops.transform.rotate(value=angleRotate, axis=( (xRotateAxis.x, xRotateAxis.y, xRotateAxis.z) ))
 
@@ -223,18 +215,9 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
             newDupZAxisTuple2 = (newDupMatrix2[0][2], newDupMatrix2[1][2], newDupMatrix2[2][2])
             newDupZAxis2 = (mathutils.Vector(newDupZAxisTuple2)).normalized()
 
-            #newDupXAxisTuple2 = (newDupMatrix2[0][0], newDupMatrix2[1][0], newDupMatrix2[2][0])
-            #newDupZAxis2.x = -newDupZAxis2.x
-            #newDupZAxis2.y = -newDupZAxis2.y
-            #newDupZAxis2.z = -newDupZAxis2.z
-
-            #newDupXAxis2 = (mathutils.Vector(newDupXAxisTuple2)).normalized()
-
             newDirRotVec2 = ( newDirRotLookAtt.cross(newDupZAxis2) ).normalized()
 
             newDirRotAngle = newDirRotLookAtt.angle(newDupZAxis2)
-            #if newDupXAxis2.angle(newDirRotLookAtt) > math.radians(90.0):
-                #newDirRotAngle = -newDirRotAngle
 
             newDirRotAngle = -newDirRotAngle # As we do it in negative axis
 
@@ -245,18 +228,14 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
             newDupMatrix2 = newDup.matrix_world  # Do it Again with new Rotation
             newDupZAxisTuple2 = (newDupMatrix2[0][1], newDupMatrix2[1][1], newDupMatrix2[2][1])
             newDupZAxis2 = (mathutils.Vector(newDupZAxisTuple2)).normalized()
-            newDupZAxis2.x = -newDupZAxis2.x
-            newDupZAxis2.y = -newDupZAxis2.y
-            newDupZAxis2.z = -newDupZAxis2.z
+            newDupZAxis2.negate()
 
             fixDirRotAngle = newDupZAxis2.angle(best_obj_nor)
             fixDirRotAxis = newDirRotLookAtt
 
             testFixAngle = newDirRotLookAtt.cross(newDupZAxis2).angle(best_obj_nor)
-            print(testFixAngle)
-            #print(newDirRotAngle)
 
-            ## temp fix
+            # fix Angle
             if  (testFixAngle < math.radians(90.0)):
                 fixDirRotAngle = -fixDirRotAngle
 
@@ -266,9 +245,7 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
             newDupMatrix3 = newDup.matrix_world  # Do it Again with new Rotation
             newDupZAxisTuple3 = (newDupMatrix3[0][1], newDupMatrix3[1][1], newDupMatrix3[2][1])
             newDupZAxis3 = (mathutils.Vector(newDupZAxisTuple3)).normalized()
-            newDupZAxis3.x = -newDupZAxis3.x
-            newDupZAxis3.y = -newDupZAxis3.y
-            newDupZAxis3.z = -newDupZAxis3.z
+            newDupZAxis3.negate()
 
             fixDirRotAngle2 = newDupZAxis3.angle(best_obj_nor)
             fixDirRotAxis2 = (newDupZAxis3.cross(best_obj_nor)).normalized()
@@ -276,7 +253,6 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
             bpy.ops.transform.rotate(value= fixDirRotAngle2, axis=( (fixDirRotAxis2.x, fixDirRotAxis2.y, fixDirRotAxis2.z) ))
 
 
-        #print(prevClonePos)
         prevClonePos = best_obj_pos.copy()  # set PreviousClone position
             
         if mifthTools.randNormalClone > 0.0:
