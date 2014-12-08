@@ -60,11 +60,11 @@ def register():
 
 
         # Draw Cloned Settings
-        drawForClonesObj = StringProperty(
-            name="drawForClonesObj",
-            subtype="NONE",
-            default=""
-        )
+        #drawForClonesObj = StringProperty(
+            #name="drawForClonesObj",
+            #subtype="NONE",
+            #default=""
+        #)
 
         drawClonesDirectionRotate = BoolProperty(
             name="drawClonesDirectionRotate",
