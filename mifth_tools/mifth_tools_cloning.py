@@ -26,9 +26,12 @@ import random
 
 bpy.mifthTools = dict()
 
+global prevClonePos
 prevClonePos = None  # PreviousClone position
+
 global drawForClonesObj
 drawForClonesObj = []  # Array of Objects Names
+
 
 class MFTDrawClones(bpy.types.Operator):
     bl_idname = "mft.draw_clones"
@@ -214,8 +217,8 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
 
                 bpy.ops.transform.rotate(value=angleRotate, axis=( (xRotateAxis.x, xRotateAxis.y, xRotateAxis.z) ), proportional='DISABLED')
 
+        # Ratate to Direction
         global prevClonePos
-
         if mifthTools.drawClonesDirectionRotate is True and prevClonePos is not None:
             newDirRotLookAtt = (prevClonePos - best_obj_pos).normalized()
 
@@ -237,19 +240,6 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
 
         prevClonePos = best_obj_pos.copy()  # set PreviousClone position
 
-        # Random rotation along Picked Normal
-        if mifthTools.randNormalClone > 0.0:
-            randNorAngle = random.uniform(math.radians(-180.0), math.radians(180.0)) * mifthTools.randNormalClone
-            randNorAxis = (best_obj_nor.x, best_obj_nor.y, best_obj_nor.z)
-            if mifthTools.drawClonesRadialRotate is False and mifthTools.drawClonesNormalRotate is False:
-                randNorAxis = (0.0, 0.0, 1.0)
-            bpy.ops.transform.rotate(value=randNorAngle, axis=( randNorAxis ), proportional='DISABLED')
-
-        # Random Scale
-        if mifthTools.randScaleClone > 0.0:
-            randScaleClone = 1.0 - (random.uniform(0.0, 0.99) * mifthTools.randScaleClone)
-            bpy.ops.transform.resize(value=(randScaleClone, randScaleClone, randScaleClone), constraint_axis=(False, False, False), constraint_orientation='GLOBAL')
-
         # Change Axis
         objMatrix = newDup.matrix_world
         if mifthTools.drawClonesDirectionRotate or mifthTools.drawClonesRadialRotate:
@@ -268,6 +258,19 @@ def mft_pick_and_clone(context, event, ray_max=1000.0):
             elif mifthTools.drawClonesAxis == '-X':
                 objFixAxisTuple = (objMatrix[0][2], objMatrix[1][2], objMatrix[2][2])
                 bpy.ops.transform.rotate(value= math.radians(90), axis=( objFixAxisTuple ), proportional='DISABLED')
+
+        # Random rotation along Picked Normal
+        if mifthTools.randNormalClone > 0.0:
+            randNorAngle = random.uniform(math.radians(-180.0), math.radians(180.0)) * mifthTools.randNormalClone
+            randNorAxis = (best_obj_nor.x, best_obj_nor.y, best_obj_nor.z)
+            if mifthTools.drawClonesRadialRotate is False and mifthTools.drawClonesNormalRotate is False:
+                randNorAxis = (0.0, 0.0, 1.0)
+            bpy.ops.transform.rotate(value=randNorAngle, axis=( randNorAxis ), proportional='DISABLED')
+
+        # Random Scale
+        if mifthTools.randScaleClone > 0.0:
+            randScaleClone = 1.0 - (random.uniform(0.0, 0.99) * mifthTools.randScaleClone)
+            bpy.ops.transform.resize(value=(randScaleClone, randScaleClone, randScaleClone), constraint_axis=(False, False, False), constraint_orientation='GLOBAL')
 
         bpy.ops.object.select_all(action='DESELECT')
 

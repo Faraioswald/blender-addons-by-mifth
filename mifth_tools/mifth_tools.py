@@ -41,7 +41,7 @@ class MFTPanelCloning(bpy.types.Panel):
         mifthTools = bpy.context.scene.mifthTools
 
         layout.operator("mft.draw_clones", text="DrawClones")
-        layout.operator("mft.pick_obj_to_clone_draw", text="PickObject")
+        layout.operator("mft.pick_obj_to_clone_draw", text="PickObjects")
         layout.prop(mifthTools, "drawClonesDirectionRotate", text='DirectionRotate')
         layout.prop(mifthTools, "drawClonesRadialRotate", text='RadialRotate')
         layout.prop(mifthTools, "drawClonesNormalRotate", text='NormalRotate')
